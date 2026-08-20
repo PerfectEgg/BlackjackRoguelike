@@ -1,6 +1,7 @@
 // 일반 카드 덱의 숫자와 그림 카드 등급입니다.
 public enum CardRank
 {
+    None = 0,
     Ace = 1,
     Two,
     Three,

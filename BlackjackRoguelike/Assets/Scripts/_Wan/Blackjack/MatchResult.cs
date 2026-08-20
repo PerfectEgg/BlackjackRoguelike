@@ -12,13 +12,19 @@ public readonly struct MatchResult
     // 딜러가 두 장 블랙잭을 만들었는지 나타냅니다.
     public bool DealerBlackjack { get; }
 
-    // 두 패의 상태로 결과를 생성합니다.
-    public MatchResult(MatchOutcome outcome, BlackjackHand playerHand, BlackjackHand dealerHand)
+    // 판정에 사용한 점수와 블랙잭 여부로 결과를 생성합니다.
+    public MatchResult(MatchOutcome outcome, int playerScore, int dealerScore, bool playerBlackjack, bool dealerBlackjack)
     {
         Outcome = outcome;
-        PlayerScore = playerHand.Score;
-        DealerScore = dealerHand.Score;
-        PlayerBlackjack = playerHand.IsBlackjack;
-        DealerBlackjack = dealerHand.IsBlackjack;
+        PlayerScore = playerScore;
+        DealerScore = dealerScore;
+        PlayerBlackjack = playerBlackjack;
+        DealerBlackjack = dealerBlackjack;
+    }
+
+    // 점수 보정을 사용하지 않는 기존 호출을 위한 결과 생성자입니다.
+    public MatchResult(MatchOutcome outcome, BlackjackHand playerHand, BlackjackHand dealerHand)
+        : this(outcome, playerHand.Score, dealerHand.Score, playerHand.IsBlackjack, dealerHand.IsBlackjack)
+    {
     }
 }

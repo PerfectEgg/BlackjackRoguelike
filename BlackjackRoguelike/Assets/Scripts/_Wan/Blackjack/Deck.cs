@@ -22,8 +22,10 @@ public sealed class Deck
         cards.Clear();
         foreach (CardSuit suit in Enum.GetValues(typeof(CardSuit)))
         {
+            if (suit == CardSuit.None) continue;
             foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
             {
+                if (rank == CardRank.None) continue;
                 cards.Add(new Card(suit, rank));
             }
         }
@@ -42,6 +44,30 @@ public sealed class Deck
         Card card = cards[lastIndex];
         cards.RemoveAt(lastIndex);
         return card;
+    }
+
+    // 지정한 숫자와 일치하는 카드 한 장을 덱에서 뽑습니다.
+    public Card DrawByRank(CardRank rank)
+    {
+        for (int _index = cards.Count - 1; _index >= 0; _index--)
+        {
+            if (cards[_index].Rank != rank) continue;
+
+            Card _card = cards[_index];
+            cards.RemoveAt(_index);
+            return _card;
+        }
+
+        Reset();
+        return DrawByRank(rank);
+    }
+
+    // 교체로 제외했던 카드를 덱에 되돌린 뒤 다시 섞습니다.
+    public void ReturnCards(IEnumerable<Card> returnedCards)
+    {
+        if (returnedCards == null) return;
+        cards.AddRange(returnedCards);
+        Shuffle();
     }
 
     private void Shuffle()

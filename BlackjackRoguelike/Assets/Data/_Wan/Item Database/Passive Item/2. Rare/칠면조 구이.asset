@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
+  m_Name: "\uCE60\uBA74\uC870 \uAD6C\uC774"
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  ItemName: "\uCE60\uBA74\uC870 \uAD6C\uC774"
+  Icon: {fileID: 0}
+  Description: "\uACF5\uACA9\uB825 \uACC4\uC218 -0.25, \uACF5\uACA9 \uC2DC \uD53C\uD574\uB7C9\uC758
+    50% \uD68C\uBCF5"
+  ItemType: 0
+  Rarity: 1
+  Effects:
+  - Category: 1
+    Operation: 1
+    Trigger: 0
+    Condition: 0
+    ConditionTarget: 0
+    ConditionValue: 0
+    CardConditionMode: 0
+    CardConditionTarget: 0
+    RequiredCardRank: 0
+    RequiredCardSuit: 0
+    RequiredCardCount: 0
+    IntValue: 0
+    FloatValue: -0.25
+    SecondaryFloatValue: 0
+    DurationScope: 1
+    Duration: 0
+    CardManipulationScope: 0
+    CardManipulationMode: 0
+    CardManipulationCount: 0
+    UsageLimit: 0
+    ExclusiveGroup: 0
+    DrawScope: 0
+    DrawTarget: 0
+    DrawMode: 0
+    DrawCardRank: 0
+    DrawCardSuit: 0
+  - Category: 4
+    Operation: 1
+    Trigger: 6
+    Condition: 0
+    ConditionTarget: 0
+    ConditionValue: 0
+    CardConditionMode: 0
+    CardConditionTarget: 0
+    RequiredCardRank: 0
+    RequiredCardSuit: 0
+    RequiredCardCount: 0
+    IntValue: 0
+    FloatValue: 0.5
+    SecondaryFloatValue: 0
+    DurationScope: 1
+    Duration: 0
+    CardManipulationScope: 0
+    CardManipulationMode: 0
+    CardManipulationCount: 0
+    UsageLimit: 0
+    ExclusiveGroup: 0
+    DrawScope: 0
+    DrawTarget: 0
+    DrawMode: 0
+    DrawCardRank: 0
+    DrawCardSuit: 0
