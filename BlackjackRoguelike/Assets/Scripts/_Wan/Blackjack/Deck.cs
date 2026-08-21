@@ -62,6 +62,44 @@ public sealed class Deck
         return DrawByRank(rank);
     }
 
+    // 지정한 무늬와 숫자가 일치하는 카드 한 장을 덱에서 뽑습니다.
+    public Card DrawSpecificCard(CardSuit suit, CardRank rank)
+    {
+        for (int _index = cards.Count - 1; _index >= 0; _index--)
+        {
+            if (cards[_index].Suit != suit || cards[_index].Rank != rank) continue;
+
+            Card _card = cards[_index];
+            cards.RemoveAt(_index);
+            return _card;
+        }
+
+        Reset();
+        return DrawSpecificCard(suit, rank);
+    }
+
+    // 덱에 남은 J, Q, K 중 무작위 그림 카드 한 장을 뽑습니다.
+    public Card DrawFaceCard()
+    {
+        List<int> _faceCardIndexes = new();
+        for (int _index = 0; _index < cards.Count; _index++)
+        {
+            CardRank _rank = cards[_index].Rank;
+            if (_rank is CardRank.Jack or CardRank.Queen or CardRank.King) _faceCardIndexes.Add(_index);
+        }
+
+        if (_faceCardIndexes.Count == 0)
+        {
+            Reset();
+            return DrawFaceCard();
+        }
+
+        int _cardIndex = _faceCardIndexes[random.Next(_faceCardIndexes.Count)];
+        Card _card = cards[_cardIndex];
+        cards.RemoveAt(_cardIndex);
+        return _card;
+    }
+
     // 교체로 제외했던 카드를 덱에 되돌린 뒤 다시 섞습니다.
     public void ReturnCards(IEnumerable<Card> returnedCards)
     {

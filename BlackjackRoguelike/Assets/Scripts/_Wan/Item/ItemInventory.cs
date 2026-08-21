@@ -42,15 +42,16 @@ public class ItemInventory
         return _ownedItems;
     }
 
-    // 보유한 액티브 아이템을 사용 처리합니다. 이미 사용한 아이템이면 false를 반환합니다.
+    // 보유한 액티브 아이템을 사용한 뒤 인벤토리에서 제거합니다.
     public bool TryUseActive(ItemInstance itemInstance)
     {
         if (itemInstance == null || itemInstance.IsUsed) return false;
 
-        foreach (ItemInstance _item in _activeItems)
+        for (int _index = 0; _index < _activeItems.Count; _index++)
         {
-            if (_item != itemInstance) continue;
-            _item.IsUsed = true;
+            if (_activeItems[_index] != itemInstance) continue;
+            itemInstance.IsUsed = true;
+            _activeItems.RemoveAt(_index);
             return true;
         }
 

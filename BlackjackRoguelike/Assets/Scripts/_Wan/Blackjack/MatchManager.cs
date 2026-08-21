@@ -9,8 +9,9 @@ public sealed class MatchManager
 {
     private readonly Deck _deck;
     private readonly MatchRules _rules;
-    private readonly Queue<CardRank> _forcedOpeningPlayerRanks = new();
+    private readonly Queue<Card> _forcedOpeningPlayerCards = new();
     private readonly Queue<CardRank> _forcedPlayerDrawRanks = new();
+    private readonly Queue<ItemEffectData> _activePlayerDrawModifiers = new();
     private int _openingDrawIndex;
     private int _playerScoreAdjustmentRange;
     private bool _forceNextPlayerOpeningBlackjack;
@@ -69,7 +70,7 @@ public sealed class MatchManager
         _playerScoreAdjustmentRange = Math.Max(0, adjustmentRange);
     }
 
-    // 다음 새 매치의 플레이어 초기 패을 에이스와 K로 고정합니다.
+    // 다음 새 매치의 플레이어 초기 패를 스페이드 A와 스페이드 J 블랙잭으로 고정합니다.
     public void ForceNextPlayerOpeningBlackjack()
     {
         _forceNextPlayerOpeningBlackjack = true;
@@ -80,6 +81,43 @@ public sealed class MatchManager
     {
         _forcedPlayerDrawRanks.Clear();
         for (int _index = 0; _index < 3; _index++) _forcedPlayerDrawRanks.Enqueue(CardRank.Seven);
+    }
+
+    // 액티브가 예약한 다음 플레이어 드로우 보정을 등록합니다.
+    public bool TryQueueActivePlayerDrawModifier(ItemEffectData effect)
+    {
+        if (!CanQueueActivePlayerDrawModifier(effect)) return false;
+
+        if (effect.DrawMode == DrawModifierMode.GuaranteeBlackjack)
+        {
+            ForceNextPlayerOpeningBlackjack();
+            return true;
+        }
+
+        _activePlayerDrawModifiers.Enqueue(effect);
+        return true;
+    }
+
+    // 현재 구현된 예약 드로우 보정인지 확인합니다.
+    public bool CanQueueActivePlayerDrawModifier(ItemEffectData effect)
+    {
+        if (effect == null || effect.DrawTarget != DrawModifierTarget.Player) return false;
+        if (effect.DrawScope is not (DrawModifierScope.NextDrawThisStage or DrawModifierScope.NextRoundOpeningHand)) return false;
+
+        return effect.DrawMode switch
+        {
+            DrawModifierMode.SetSpecificCard => effect.DrawCardRank != CardRank.None,
+            DrawModifierMode.SetFaceCard => true,
+            DrawModifierMode.DuplicateLastCard => true,
+            DrawModifierMode.GuaranteeBlackjack => true,
+            _ => false
+        };
+    }
+
+    // 현재 스테이지에서만 유효한 액티브 드로우 예약을 비웁니다.
+    public void ClearActivePlayerDrawModifiers()
+    {
+        _activePlayerDrawModifiers.Clear();
     }
 
     // 초기 카드 배분 또는 딜러 턴을 한 장씩 진행합니다.
@@ -221,23 +259,48 @@ public sealed class MatchManager
         StateChanged?.Invoke(State);
     }
 
-    // 예약된 테스트용 블랙잭 카드가 있으면 다음 초기 패에만 사용할 카드를 준비합니다.
+    // 예약된 블랙잭 효과가 있으면 다음 초기 패에 스페이드 A와 스페이드 J를 준비합니다.
     private void PrepareForcedOpeningCards()
     {
-        _forcedOpeningPlayerRanks.Clear();
+        _forcedOpeningPlayerCards.Clear();
         if (!_forceNextPlayerOpeningBlackjack) return;
 
-        _forcedOpeningPlayerRanks.Enqueue(CardRank.Ace);
-        _forcedOpeningPlayerRanks.Enqueue(CardRank.King);
+        _forcedOpeningPlayerCards.Enqueue(new Card(CardSuit.Spades, CardRank.Ace));
+        _forcedOpeningPlayerCards.Enqueue(new Card(CardSuit.Spades, CardRank.Jack));
         _forceNextPlayerOpeningBlackjack = false;
     }
 
     // 테스트 예약 카드가 있으면 우선 사용하고, 없으면 일반 덱에서 카드를 뽑습니다.
     private Card DrawForcedOrRandomPlayerCard(bool isOpeningCard)
     {
-        if (isOpeningCard && _forcedOpeningPlayerRanks.Count > 0) return _deck.DrawByRank(_forcedOpeningPlayerRanks.Dequeue());
+        if (isOpeningCard && _forcedOpeningPlayerCards.Count > 0)
+        {
+            Card _forcedCard = _forcedOpeningPlayerCards.Dequeue();
+            return _deck.DrawSpecificCard(_forcedCard.Suit, _forcedCard.Rank);
+        }
+        if (_activePlayerDrawModifiers.Count > 0) return DrawActiveModifierCard(_activePlayerDrawModifiers.Dequeue());
         if (_forcedPlayerDrawRanks.Count > 0) return _deck.DrawByRank(_forcedPlayerDrawRanks.Dequeue());
         return _deck.Draw();
+    }
+
+    // 예약된 액티브 드로우 보정에 맞는 카드 한 장을 덱에서 뽑습니다.
+    private Card DrawActiveModifierCard(ItemEffectData effect)
+    {
+        return effect.DrawMode switch
+        {
+            DrawModifierMode.SetSpecificCard when effect.DrawCardSuit != CardSuit.None => _deck.DrawSpecificCard(effect.DrawCardSuit, effect.DrawCardRank),
+            DrawModifierMode.SetSpecificCard => _deck.DrawByRank(effect.DrawCardRank),
+            DrawModifierMode.SetFaceCard => _deck.DrawFaceCard(),
+            DrawModifierMode.DuplicateLastCard when PlayerHand.Cards.Count > 0 => DrawSameAsLastPlayerCard(),
+            _ => _deck.Draw()
+        };
+    }
+
+    // 마지막으로 받은 플레이어 카드와 숫자·무늬가 동일한 카드를 덱에서 뽑습니다.
+    private Card DrawSameAsLastPlayerCard()
+    {
+        Card _lastCard = PlayerHand.Cards[PlayerHand.Cards.Count - 1];
+        return _deck.DrawSpecificCard(_lastCard.Suit, _lastCard.Rank);
     }
 
     // 매치를 닫고 전투 시스템이 사용할 결과를 발행합니다.

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "DODO's \uACE8\uBB34"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "DODO's \uACE8\uBB34"
-  Icon: {fileID: 0}
+  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   Description: "\uB9E4 \uD310 \uCD08\uAE30 \uD328 \uC804\uCCB4 \uAD50\uD658 \uAC00\uB2A5"
   ItemType: 0
   Rarity: 0
@@ -31,6 +31,7 @@ MonoBehaviour:
     RequiredCardCount: 0
     IntValue: 0
     FloatValue: 0
+    ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 2
     Duration: 1

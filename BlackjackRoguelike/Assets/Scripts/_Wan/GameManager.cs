@@ -8,6 +8,7 @@ public sealed class GameManager
     private MonsterDatabase _monsterDatabase;
     private ItemDatabase _itemDatabase;
     private readonly ItemDropManager _itemDropManager = new();
+    private readonly ShopManager _shopManager = new();
     private readonly CardManipulationUsageState _cardManipulationUsageState = new();
     private readonly ItemEffectProcessor _itemEffectProcessor = new();
     private ItemEffectData _initialHandSwapEffect;
@@ -33,6 +34,8 @@ public sealed class GameManager
     public ItemDatabase ItemDatabase => _itemDatabase;
     // 획득 확정된 아이템을 보관하는 플레이어 인벤토리입니다.
     public ItemInventory ItemInventory { get; } = new();
+    // 현재 상점의 진열과 새로 고침 정보를 관리합니다.
+    public ShopManager Shop => _shopManager;
     // 처치 후 다음 스테이지로 진행할 수 있는지 나타냅니다.
     public bool CanProceedToNextStage { get; private set; }
     // 상점 종료를 기다리고 있는지 나타냅니다.
@@ -54,6 +57,8 @@ public sealed class GameManager
     public event Action<Monster> MonsterDefeated;
     // 5 또는 10스테이지 진입 전에 상점을 열어야 할 때 다음 스테이지 번호를 전달합니다.
     public event Action<int> ShopVisitRequested;
+    // 상점 진열이 처음 생성되거나 새로 고침된 뒤 발생합니다.
+    public event Action<ShopManager> ShopStockChanged;
     // 새 스테이지 전투가 준비되었을 때 스테이지 번호와 몬스터를 전달합니다.
     public event Action<int, Monster> StageStarted;
     // 모든 스테이지를 완료했을 때 발생합니다.
@@ -93,6 +98,7 @@ public sealed class GameManager
         _isCurrentMonsterDefeated = false;
         CanProceedToNextStage = false;
         IsWaitingForShop = false;
+        Match.ClearActivePlayerDrawModifiers();
         _cardManipulationUsageState.ResetStage();
         StartMatch();
         StageStarted?.Invoke(CurrentStage, Monster);
@@ -134,7 +140,7 @@ public sealed class GameManager
     public bool TryAddItemToInventory(ItemDefinition itemDefinition)
     {
         if (!ItemInventory.TryAdd(itemDefinition)) return false;
-        _itemEffectProcessor.ApplyOnItemAcquired(Player, ItemInventory);
+        _itemEffectProcessor.ApplyOnItemAcquired(Player, ItemInventory, Match.PlayerHand, Gold);
         MonsterGoldDropMultiplier = _itemEffectProcessor.CalculateMonsterGoldDropMultiplier(ItemInventory);
         PlayerScoreAdjustmentRange = _itemEffectProcessor.CalculatePlayerScoreAdjustmentRange(ItemInventory);
         Match.SetPlayerScoreAdjustmentRange(PlayerScoreAdjustmentRange);
@@ -148,10 +154,30 @@ public sealed class GameManager
     {
         if (itemInstance == null || itemInstance.Definition == null) return false;
 
+        bool _hasThisRoundAttackEffect = _itemEffectProcessor.HasThisRoundActiveAttackEffect(itemInstance);
+        bool _hasActiveDrawModifierEffect = _itemEffectProcessor.HasActiveDrawModifierEffect(itemInstance, Match);
+        bool _hasActiveBarrierEffect = _itemEffectProcessor.HasActiveBarrierEffect(itemInstance);
+        bool _hasActiveHealEffect = _itemEffectProcessor.HasActiveHealEffect(itemInstance);
         int _damage = _itemEffectProcessor.CalculateActiveDirectDamage(Player, itemInstance);
-        if (_damage <= 0 || !ItemInventory.TryUseActive(itemInstance)) return false;
+        if (!_hasThisRoundAttackEffect && !_hasActiveDrawModifierEffect && !_hasActiveBarrierEffect && !_hasActiveHealEffect && _damage <= 0) return false;
+        if (!ItemInventory.TryUseActive(itemInstance)) return false;
 
-        ApplyDirectDamageToMonster(_damage);
+        if (_hasThisRoundAttackEffect)
+        {
+            _itemEffectProcessor.ApplyThisRoundActiveAttackEffects(itemInstance, Match.PlayerHand, Gold);
+            _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.None, null, false, Match.PlayerExtraDrawCount, Gold);
+            _damage = _itemEffectProcessor.CalculateActiveDirectDamage(Player, itemInstance);
+        }
+        if (_hasActiveDrawModifierEffect) _itemEffectProcessor.ApplyActiveDrawModifierEffects(itemInstance, Match);
+        if (_hasActiveBarrierEffect) _itemEffectProcessor.ApplyActiveBarrierEffects(Player, itemInstance);
+        if (_hasActiveHealEffect)
+        {
+            int _healthChange = _itemEffectProcessor.CalculateActiveHealAmount(Player, itemInstance);
+            if (_healthChange > 0) Player.Heal(_healthChange);
+            else if (_healthChange < 0) Player.LoseHp(-_healthChange);
+        }
+
+        if (_damage > 0) ApplyDirectDamageToMonster(_damage);
         return true;
     }
 
@@ -173,6 +199,31 @@ public sealed class GameManager
     {
         if (!IsWaitingForShop) return false;
         IsWaitingForShop = false;
+        _shopManager.Close();
+        return true;
+    }
+
+    // 현재 상점의 새로 고침 비용을 지불하고 패시브 1개·액티브 2개를 새로 진열합니다.
+    public bool TryRefreshShop()
+    {
+        if (!IsWaitingForShop || !_shopManager.IsOpen) return false;
+        int _refreshCost = _shopManager.CurrentRefreshCost;
+        if (!TrySpendGold(_refreshCost)) return false;
+        if (!_shopManager.Refresh(ItemInventory.GetOwnedPassiveDefinitions(), _itemEffectProcessor.CalculateShopItemDiscountRate(ItemInventory))) return false;
+
+        ShopStockChanged?.Invoke(_shopManager);
+        return true;
+    }
+
+    // 현재 상점 진열 아이템을 구매하고, 패시브 중복 규칙은 인벤토리에 그대로 위임합니다.
+    public bool TryBuyShopOffer(int offerIndex)
+    {
+        if (!IsWaitingForShop || !_shopManager.TryGetPurchasableOffer(offerIndex, out ShopOffer _offer)) return false;
+        if (!CanAddItemToInventory(_offer.Item) || !TrySpendGold(_offer.Price)) return false;
+        if (!TryAddItemToInventory(_offer.Item)) return false;
+
+        _shopManager.MarkOfferPurchased(_offer);
+        ShopStockChanged?.Invoke(_shopManager);
         return true;
     }
 
@@ -191,6 +242,7 @@ public sealed class GameManager
     {
         if (amount < 0 || Gold < amount) return false;
         Gold -= amount;
+        RecalculateGoldBasedAttackMultiplier();
         GoldChanged?.Invoke(Gold);
         return true;
     }
@@ -203,8 +255,9 @@ public sealed class GameManager
         _hasUsedInitialHandSwap = false;
         _hasUsedBustCardRemoval = false;
         _cardManipulationUsageState.ResetRound();
+        if (_itemEffectProcessor.TryRollNextRoundBlackjack(ItemInventory)) Match.ForceNextPlayerOpeningBlackjack();
         Match.StartMatch();
-        _itemEffectProcessor.BeginRound(Player, ItemInventory, Match.PlayerHand);
+        _itemEffectProcessor.BeginRound(Player, ItemInventory, Match.PlayerHand, Gold);
         _itemEffectProcessor.HandleRoundStarted(Player, ItemInventory);
     }
 
@@ -262,6 +315,7 @@ public sealed class GameManager
     // 무승부를 제외한 매치 결과를 피해로 계산해 패배 캐릭터에게 적용합니다.
     private void ApplyMatchDamage(MatchResult matchResult)
     {
+        matchResult = _itemEffectProcessor.ApplyMonsterBustBlackjackConversion(ItemInventory, matchResult, Match.TargetScore);
         _itemEffectProcessor.HandleMatchEnded(matchResult, ItemInventory);
         if (matchResult.Outcome == MatchOutcome.Draw)
         {
@@ -269,7 +323,7 @@ public sealed class GameManager
             ApplyDirectDamageToMonster(_drawDamage);
             return;
         }
-        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.OnMatchEnd, matchResult, _playerDoubleDownAttempted, Match.PlayerExtraDrawCount);
+        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.OnMatchEnd, matchResult, _playerDoubleDownAttempted, Match.PlayerExtraDrawCount, Gold);
         DamageResult _damageResult = DamageCalculator.Calculate(matchResult, Player, Monster, _playerDoubleDownAttempted);
         bool _wasPlayerProtected = _damageResult.Defender == Player && Player.HasBarrier;
         int _actualDamageToMonster = _damageResult.Defender == Monster ? Math.Min(_damageResult.Damage, Monster.CurrentHp) : 0;
@@ -313,7 +367,7 @@ public sealed class GameManager
     // 카드가 공개된 뒤 현재 패의 조건부 공격력 효과를 다시 계산합니다.
     private void RecalculateAttackMultiplierAfterDraw(bool isPlayer, Card card, int score)
     {
-        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.AfterDraw, null, false, Match.PlayerExtraDrawCount);
+        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.AfterDraw, null, false, Match.PlayerExtraDrawCount, Gold);
     }
 
     // 드로우 후 버스트가 발생하면 보유 패시브로 마지막 카드를 한 번 삭제합니다.
@@ -325,7 +379,7 @@ public sealed class GameManager
         if (!Match.TryRemoveLastPlayerCard(out Card _removedCard)) return;
 
         _hasUsedBustCardRemoval = true;
-        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.AfterDraw, null, false, Match.PlayerExtraDrawCount);
+        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.AfterDraw, null, false, Match.PlayerExtraDrawCount, Gold);
         UnityEngine.Debug.Log($"[버스트 카드 제거] 버스트 {_bustScore}/{Match.TargetScore} 감지 → {_removedCard} 삭제 → 판정 점수 {Match.PlayerScore}/{Match.TargetScore}");
         if (Match.PlayerScore > Match.TargetScore)
         {
@@ -387,14 +441,31 @@ public sealed class GameManager
         if (!IsShopBeforeStage(_nextStage)) return;
 
         IsWaitingForShop = true;
+        OpenShop(_nextStage);
         ShopVisitRequested?.Invoke(_nextStage);
+    }
+
+    // 다음 전투 스테이지 기준 가격으로 상점을 열고 현재 진열 정보를 외부 UI에 전달합니다.
+    private void OpenShop(int stageNumber)
+    {
+        if (_itemDatabase == null) return;
+        _shopManager.Open(_itemDatabase, stageNumber, ItemInventory.GetOwnedPassiveDefinitions(), _itemEffectProcessor.CalculateShopItemDiscountRate(ItemInventory));
+        ShopStockChanged?.Invoke(_shopManager);
+    }
+
+    // 실제 추가 전에 패시브 중복으로 거절될 아이템인지 확인합니다.
+    private bool CanAddItemToInventory(ItemDefinition itemDefinition)
+    {
+        if (itemDefinition == null) return false;
+        if (itemDefinition.ItemType != ItemType.Passive) return true;
+        return !ItemInventory.GetOwnedPassiveDefinitions().Contains(itemDefinition);
     }
 
     // 몬스터 처치 직후 레벨업 보상과 영구 아이템 보정을 다시 적용합니다.
     private void LevelUpAfterMonsterDefeat()
     {
         Player.LevelUp();
-        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.None);
+        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.None, null, false, Match.PlayerExtraDrawCount, Gold);
         _itemEffectProcessor.RecalculatePermanentMaxHp(Player, ItemInventory);
     }
 
@@ -425,6 +496,13 @@ public sealed class GameManager
     {
         if (amount <= 0) return;
         Gold += amount;
+        RecalculateGoldBasedAttackMultiplier();
         GoldChanged?.Invoke(Gold);
+    }
+
+    // 골드가 바뀐 직후 골드 비례 영구 공격력 계수 패시브를 다시 계산합니다.
+    private void RecalculateGoldBasedAttackMultiplier()
+    {
+        _itemEffectProcessor.RecalculateAttackMultiplier(Player, ItemInventory, Match.PlayerHand, ItemTrigger.None, null, false, Match.PlayerExtraDrawCount, Gold);
     }
 }

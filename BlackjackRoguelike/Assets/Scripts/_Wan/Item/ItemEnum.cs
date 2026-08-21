@@ -95,6 +95,73 @@ public enum ItemEffectOperation
     Swap
 }
 
+// 아이템 효과가 실제로 적용될 대상을 지정합니다. 조건 대상과는 별개로 사용합니다.
+public enum ItemEffectTarget
+{
+    [InspectorName("없음")]
+    None,
+    [InspectorName("플레이어")]
+    Player,
+    [InspectorName("몬스터")]
+    Monster,
+    [InspectorName("양측")]
+    Both
+}
+
+// 공통 카테고리·수치 조합만으로 의미를 표현하기 어려운 액티브 전용 동작입니다.
+public enum ActiveEffectAction
+{
+    [InspectorName("없음")]
+    None,
+    [InspectorName("최대 체력 배팅")]
+    MaxHpBet,
+    [InspectorName("현재 라운드 무승부 강제")]
+    ForceCurrentRoundDraw,
+    [InspectorName("상대 초기 패 2장 강제")]
+    ForceDealerOpeningHand,
+    [InspectorName("양측 패 교환")]
+    SwapHands,
+    [InspectorName("덱 카드 파괴 후 재드로우")]
+    RerollDeckCard,
+    [InspectorName("상점 무료 구매권")]
+    FreeShopPurchase,
+    [InspectorName("다음 라운드 카드 숨김")]
+    HideNextRoundCard,
+    [InspectorName("스테이지 버스트 무시")]
+    IgnoreStageBust,
+    [InspectorName("몬스터 최대 체력 비율 감소")]
+    ReduceMonsterMaxHp,
+    [InspectorName("이번 라운드 공격력 계수 교체")]
+    SwapAttackMultipliers,
+    [InspectorName("보상 없이 스테이지 넘김")]
+    SkipStageWithoutReward,
+    [InspectorName("다음 라운드 블랙잭 승리 조건")]
+    RequireBlackjackVictory,
+    [InspectorName("스테이지 버스트 점수 피해")]
+    BurstScoreDamage
+}
+
+// Float 값의 적용 기준입니다. 기본값은 입력한 수치를 그대로 사용합니다.
+public enum ItemEffectValueSource
+{
+    [InspectorName("고정 값")]
+    Fixed,
+    [InspectorName("플레이어 현재 패 장수")]
+    PlayerHandCardCount,
+    [InspectorName("플레이어 현재 골드")]
+    PlayerGold,
+    [InspectorName("플레이어 최대 체력 비율")]
+    PlayerMaxHpPercent,
+    [InspectorName("몬스터 최대 체력 비율")]
+    MonsterMaxHpPercent,
+    [InspectorName("현재 플레이어 점수")]
+    PlayerScore,
+    [InspectorName("버스트 당시 플레이어 점수")]
+    PlayerBustScore,
+    [InspectorName("이번 공격의 실제 피해량")]
+    DealtDamage
+}
+
 // 효과가 유지될 범위입니다. None은 즉시 처리하거나 범위가 필요 없는 효과에 사용합니다.
 public enum ItemEffectDurationScope
 {
@@ -185,11 +252,18 @@ public enum CardConditionTarget
 // 드로우 카드 보정 효과가 적용되는 시점과 범위입니다.
 public enum DrawModifierScope
 {
+    [InspectorName("없음")]
     None,
+    [InspectorName("이번 스테이지 다음 드로우")]
     NextDrawThisStage,
+    [InspectorName("다음 스테이지 다음 드로우")]
     NextDrawNextStage,
+    [InspectorName("이번 라운드 모든 드로우")]
     AllDrawsThisRound,
-    AllDrawsNextRound
+    [InspectorName("다음 라운드 모든 드로우")]
+    AllDrawsNextRound,
+    [InspectorName("다음 라운드 초기 패")]
+    NextRoundOpeningHand
 }
 
 // 드로우 카드 보정 효과가 적용될 대상을 지정합니다.
@@ -219,7 +293,9 @@ public enum DrawModifierMode
     [InspectorName("리롤")]
     Reroll,
     [InspectorName("카드 파괴 후 재드로우")]
-    DestroyAndRedraw
+    DestroyAndRedraw,
+    [InspectorName("블랙잭 초기 패 강제")]
+    GuaranteeBlackjack
 }
 
 // 패 교환·리롤·삭제 같은 카드 조작이 일어날 카드 영역입니다.

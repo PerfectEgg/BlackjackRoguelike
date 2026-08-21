@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "FAN ME \uBD80\uCC44 \uBE14\uB8E8\uBCA0\uB9AC\uB9DB"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "FAN ME \uBD80\uCC44 \uBE14\uB8E8\uBCA0\uB9AC\uB9DB"
-  Icon: {fileID: 0}
+  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   Description: "\uACF5\uACA9\uB825 \uACC4\uC218 +0.15 \uCD94\uAC00"
   ItemType: 0
   Rarity: 0
@@ -31,6 +31,7 @@ MonoBehaviour:
     RequiredCardCount: 0
     IntValue: 0
     FloatValue: 0.15
+    ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 1
     Duration: 0

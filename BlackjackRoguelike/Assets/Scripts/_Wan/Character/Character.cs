@@ -44,6 +44,17 @@ public abstract class Character
         CurrentHpChanged?.Invoke(this);
     }
 
+    // 아이템 사용 비용처럼 방어 효과를 거치지 않는 체력 감소를 적용하며 최소 체력 1을 보장합니다.
+    public void LoseHp(int amount)
+    {
+        if (amount <= 0) return;
+        int _nextHp = System.Math.Max(1, CurrentHp - amount);
+        if (CurrentHp == _nextHp) return;
+
+        CurrentHp = _nextHp;
+        CurrentHpChanged?.Invoke(this);
+    }
+
     // 최대 체력을 넘지 않도록 현재 체력을 회복합니다.
     public void Heal(int amount)
     {

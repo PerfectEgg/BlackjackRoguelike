@@ -10,16 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
-  m_Name: "\uD14C\uC2A4\uD2B8 \uCCB4\uB825 \uD3EC\uC158"
+  m_Name: "\uBC84\uD130 \uBC14\uB978 \uD1A0\uC2A4\uD2B8"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  ItemName: "\uD14C\uC2A4\uD2B8 \uCCB4\uB825 \uD3EC\uC158"
-  Icon: {fileID: 0}
+  ItemName: "\uBC84\uD130 \uBC14\uB978 \uD1A0\uC2A4\uD2B8"
+  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  Description: "\uCCB4\uB825 200 \uD68C\uBCF5"
   ItemType: 1
   Rarity: 0
   Effects:
   - Category: 3
     Operation: 1
-    Trigger: 6
+    Trigger: 7
+    Target: 1
+    ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
@@ -30,6 +33,7 @@ MonoBehaviour:
     RequiredCardCount: 0
     IntValue: 200
     FloatValue: 0
+    ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 0
     Duration: 0

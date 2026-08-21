@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\uCC44\uC154\uC758 \uC218\uC5FC\uD138 \uBD80\uC801"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "\uCC44\uC154\uC758 \uC218\uC5FC\uD138 \uBD80\uC801"
-  Icon: {fileID: 0}
+  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   Description: "\uACE8\uB4DC \uB4DC\uB86D\uB7C9 25% \uC99D\uAC00"
   ItemType: 0
   Rarity: 0
@@ -31,6 +31,7 @@ MonoBehaviour:
     RequiredCardCount: 0
     IntValue: 0
     FloatValue: 0.25
+    ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 1
     Duration: 0

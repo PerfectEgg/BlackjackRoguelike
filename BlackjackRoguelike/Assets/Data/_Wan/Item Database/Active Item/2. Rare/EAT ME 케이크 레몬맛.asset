@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
-  m_Name: "\uD14C\uC2A4\uD2B8 \uB370\uBBF8\uC9C0 \uD76C\uADC0"
+  m_Name: "EAT ME \uCF00\uC774\uD06C \uB808\uBAAC\uB9DB"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  ItemName: "\uD14C\uC2A4\uD2B8 \uB370\uBBF8\uC9C0 \uD76C\uADC0"
-  Icon: {fileID: 0}
+  ItemName: "EAT ME \uCF00\uC774\uD06C \uB808\uBAAC\uB9DB"
+  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  Description: "\uD604\uC7AC \uACF5\uACA9\uB825 \uACC4\uC218 X 20\uC758 \uB370\uBBF8\uC9C0
+    \uBD80\uC5EC"
   ItemType: 1
   Rarity: 1
   Effects:
-  - Category: 11
+  - Category: 12
     Operation: 2
-    Trigger: 6
+    Trigger: 7
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
@@ -28,8 +30,9 @@ MonoBehaviour:
     RequiredCardRank: 0
     RequiredCardSuit: 0
     RequiredCardCount: 0
-    IntValue: 40
+    IntValue: 20
     FloatValue: 0
+    ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 0
     Duration: 0

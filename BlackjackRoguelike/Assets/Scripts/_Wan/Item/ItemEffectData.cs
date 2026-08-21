@@ -12,6 +12,10 @@ public class ItemEffectData
     public ItemEffectOperation Operation = ItemEffectOperation.None;
     [Tooltip("이 효과를 검사할 게임 시점입니다.")]
     public ItemTrigger Trigger = ItemTrigger.None;
+    [Tooltip("효과가 실제로 적용될 대상입니다. 조건 대상과 다르므로, 필요 없으면 None으로 둡니다.")]
+    public ItemEffectTarget Target = ItemEffectTarget.None;
+    [Tooltip("공통 카테고리만으로 표현하기 어려운 액티브 전용 동작입니다. 일반적인 직접 피해·회복·공격력 효과에는 None을 사용합니다.")]
+    public ActiveEffectAction ActiveAction = ActiveEffectAction.None;
 
     [Header("세부 발동 조건")]
     [Tooltip("승리, 블랙잭, 버스트처럼 카드와 무관한 조건입니다. 필요 없으면 None입니다.")]
@@ -38,6 +42,8 @@ public class ItemEffectData
     public int IntValue;
     [Tooltip("공격력 계수, 확률, 체력 비율 등 소수 수치입니다.")]
     public float FloatValue;
+    [Tooltip("Float 값의 적용 기준입니다. 패 장수·골드·체력 비율·점수처럼 동적 수치가 필요할 때 선택합니다.")]
+    public ItemEffectValueSource ValueSource = ItemEffectValueSource.Fixed;
     [Tooltip("두 번째 수치가 필요한 복합 효과에 사용합니다.")]
     public float SecondaryFloatValue;
     [Header("지속 범위")]
@@ -109,12 +115,32 @@ public sealed class ItemEffectProcessor
 {
     private float _nextRoundAttackBonus;
     private float _currentRoundAttackBonus;
+    private readonly List<ActiveAttackRuntimeEffect> _activeAttackEffects = new();
 
     // 아이템 획득 직후 영구 공격력 패시브를 다시 계산합니다.
-    public void ApplyOnItemAcquired(Player player, ItemInventory inventory)
+    public void ApplyOnItemAcquired(Player player, ItemInventory inventory, BlackjackHand playerHand, int playerGold)
     {
-        RecalculateAttackMultiplier(player, inventory, null, ItemTrigger.None);
+        RecalculateAttackMultiplier(player, inventory, playerHand, ItemTrigger.None, null, false, 0, playerGold);
         RecalculatePermanentMaxHp(player, inventory);
+    }
+
+    // 매 라운드 시작 전에 블랙잭 초기 패 강제 패시브의 확률을 합산해 한 번 판정합니다.
+    public bool TryRollNextRoundBlackjack(ItemInventory inventory)
+    {
+        if (inventory == null) return false;
+
+        float _totalChance = 0f;
+        foreach (ItemInstance _item in inventory.PassiveItems)
+        {
+            if (_item.Definition == null) continue;
+            foreach (ItemEffectData _effect in _item.Definition.Effects)
+            {
+                if (!IsNextRoundBlackjackEffect(_effect)) continue;
+                _totalChance += Mathf.Clamp01(_effect.FloatValue) * Math.Max(1, _item.StackCount);
+            }
+        }
+
+        return UnityEngine.Random.value < Mathf.Clamp01(_totalChance);
     }
 
     // 보유 패시브를 기준으로 플레이어의 최종 영구 최대 체력을 계산합니다.
@@ -219,6 +245,25 @@ public sealed class ItemEffectProcessor
         return Math.Max(0, _adjustmentRange);
     }
 
+    // 조건 없는 영구 상점 할인 패시브를 합산해 아이템 가격 할인율을 반환합니다.
+    public float CalculateShopItemDiscountRate(ItemInventory inventory)
+    {
+        if (inventory == null) return 0f;
+
+        float _discountRate = 0f;
+        foreach (ItemInstance _item in inventory.PassiveItems)
+        {
+            if (_item.Definition == null) continue;
+            foreach (ItemEffectData _effect in _item.Definition.Effects)
+            {
+                if (!IsPermanentShopDiscountEffect(_effect)) continue;
+                _discountRate += _effect.FloatValue * Math.Max(1, _item.StackCount);
+            }
+        }
+
+        return Mathf.Clamp01(_discountRate);
+    }
+
     // 액티브 아이템 사용 시 공격력 계수에 수치를 곱한 직접 피해를 계산합니다.
     public int CalculateActiveDirectDamage(Player player, ItemInstance itemInstance)
     {
@@ -255,6 +300,25 @@ public sealed class ItemEffectProcessor
         return Math.Max(0, _damage);
     }
 
+    // 몬스터 버스트 승리 시 플레이어를 블랙잭으로 간주하는 패시브가 있으면 결과를 블랙잭 승리로 변환합니다.
+    public MatchResult ApplyMonsterBustBlackjackConversion(ItemInventory inventory, MatchResult matchResult, int targetScore)
+    {
+        if (inventory == null || matchResult.Outcome != MatchOutcome.PlayerWin) return matchResult;
+        if (matchResult.DealerScore <= targetScore || matchResult.PlayerBlackjack) return matchResult;
+
+        foreach (ItemInstance _item in inventory.PassiveItems)
+        {
+            if (_item.Definition == null) continue;
+            foreach (ItemEffectData _effect in _item.Definition.Effects)
+            {
+                if (!IsMonsterBustBlackjackEffect(_effect)) continue;
+                return new MatchResult(matchResult.Outcome, matchResult.PlayerScore, matchResult.DealerScore, true, matchResult.DealerBlackjack);
+            }
+        }
+
+        return matchResult;
+    }
+
     // 플레이어가 몬스터에게 실제로 입힌 피해량을 기준으로 영구 체력 흡수 회복량을 계산합니다.
     public int CalculateDamageDealtLifeSteal(Player player, ItemInventory inventory, int dealtDamage)
     {
@@ -274,12 +338,118 @@ public sealed class ItemEffectProcessor
         return Math.Max(0, Mathf.FloorToInt(dealtDamage * Math.Max(0f, _lifeStealRate)));
     }
 
-    // 새 라운드에 예약된 공격력 보너스를 적용하고 이전 라운드 보너스는 제거합니다.
-    public void BeginRound(Player player, ItemInventory inventory, BlackjackHand playerHand)
+    // 새 라운드를 시작하며 현재 라운드를 모두 소진한 액티브 공격력 효과를 제거합니다.
+    public void BeginRound(Player player, ItemInventory inventory, BlackjackHand playerHand, int playerGold)
     {
         _currentRoundAttackBonus = _nextRoundAttackBonus;
         _nextRoundAttackBonus = 0f;
-        RecalculateAttackMultiplier(player, inventory, playerHand, ItemTrigger.None);
+        AdvanceActiveAttackEffectDurations();
+        RecalculateAttackMultiplier(player, inventory, playerHand, ItemTrigger.None, null, false, 0, playerGold);
+    }
+
+    // 사용 즉시 이번 라운드에 적용되는 공격력 계수 액티브 효과가 있는지 확인합니다.
+    public bool HasThisRoundActiveAttackEffect(ItemInstance itemInstance)
+    {
+        if (itemInstance?.Definition == null || itemInstance.Definition.ItemType != ItemType.Active) return false;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (IsThisRoundActiveAttackEffect(_effect)) return true;
+        }
+
+        return false;
+    }
+
+    // 사용 즉시 다음 플레이어 드로우를 보정하는 액티브 효과가 있는지 확인합니다.
+    public bool HasActiveDrawModifierEffect(ItemInstance itemInstance, MatchManager match)
+    {
+        if (itemInstance?.Definition == null || itemInstance.Definition.ItemType != ItemType.Active || match == null) return false;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (IsActiveDrawModifierEffect(_effect) && match.CanQueueActivePlayerDrawModifier(_effect)) return true;
+        }
+
+        return false;
+    }
+
+    // 사용 즉시 플레이어에게 보호막 한 개를 부여하는 액티브 효과가 있는지 확인합니다.
+    public bool HasActiveBarrierEffect(ItemInstance itemInstance)
+    {
+        if (itemInstance?.Definition == null || itemInstance.Definition.ItemType != ItemType.Active) return false;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (IsActiveBarrierEffect(_effect)) return true;
+        }
+
+        return false;
+    }
+
+    // 사용 즉시 플레이어 체력을 회복하는 액티브 효과가 있는지 확인합니다.
+    public bool HasActiveHealEffect(ItemInstance itemInstance)
+    {
+        if (itemInstance?.Definition == null || itemInstance.Definition.ItemType != ItemType.Active) return false;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (IsActiveHealEffect(_effect)) return true;
+        }
+
+        return false;
+    }
+
+    // 사용한 액티브에 포함된 드로우 보정을 매치의 다음 플레이어 드로우 예약 큐에 등록합니다.
+    public void ApplyActiveDrawModifierEffects(ItemInstance itemInstance, MatchManager match)
+    {
+        if (itemInstance?.Definition == null || match == null) return;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (IsActiveDrawModifierEffect(_effect)) match.TryQueueActivePlayerDrawModifier(_effect);
+        }
+    }
+
+    // 사용한 액티브의 보호막 효과를 플레이어에게 적용합니다.
+    public void ApplyActiveBarrierEffects(Player player, ItemInstance itemInstance)
+    {
+        if (player == null || itemInstance?.Definition == null) return;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (!IsActiveBarrierEffect(_effect)) continue;
+            player.GrantBarrier();
+            return;
+        }
+    }
+
+    // 사용한 액티브의 즉시 체력 변화를 합산합니다. 양수는 회복, 음수는 체력 비용입니다.
+    public int CalculateActiveHealAmount(Player player, ItemInstance itemInstance)
+    {
+        if (player == null || itemInstance?.Definition == null) return 0;
+
+        int _healthChange = 0;
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (!IsActiveHealEffect(_effect)) continue;
+            _healthChange += CalculateActiveHealEffectAmount(player, _effect);
+        }
+
+        return _healthChange;
+    }
+
+    // 사용한 액티브의 공격력 계수 효과를 런타임 상태에 등록합니다.
+    public void ApplyThisRoundActiveAttackEffects(ItemInstance itemInstance, BlackjackHand playerHand, int playerGold)
+    {
+        if (itemInstance?.Definition == null) return;
+
+        foreach (ItemEffectData _effect in itemInstance.Definition.Effects)
+        {
+            if (!IsThisRoundActiveAttackEffect(_effect)) continue;
+
+            int _remainingRounds = Math.Max(1, _effect.Duration);
+            _activeAttackEffects.Add(new ActiveAttackRuntimeEffect(_effect, _remainingRounds));
+        }
     }
 
     // 매치 결과가 무승부일 때 다음 라운드 공격력 보너스 효과를 예약합니다.
@@ -358,7 +528,7 @@ public sealed class ItemEffectProcessor
     }
 
     // 보유 패시브와 현재 패을 기준으로 플레이어의 최종 공격력 계수를 계산합니다.
-    public void RecalculateAttackMultiplier(Player player, ItemInventory inventory, BlackjackHand playerHand, ItemTrigger trigger, MatchResult? matchResult = null, bool playerDoubleDownAttempted = false, int playerExtraDrawCount = 0)
+    public void RecalculateAttackMultiplier(Player player, ItemInventory inventory, BlackjackHand playerHand, ItemTrigger trigger, MatchResult? matchResult = null, bool playerDoubleDownAttempted = false, int playerExtraDrawCount = 0, int playerGold = 0)
     {
         if (player == null || inventory == null) return;
 
@@ -366,33 +536,92 @@ public sealed class ItemEffectProcessor
         foreach (ItemInstance _item in inventory.PassiveItems)
         {
             if (_item.Definition == null) continue;
-            ApplyAttackEffects(_item, playerHand, trigger, matchResult, playerDoubleDownAttempted, playerExtraDrawCount, ref _attackMultiplier);
+            ApplyAttackEffects(_item, playerHand, trigger, matchResult, playerDoubleDownAttempted, playerExtraDrawCount, playerGold, ref _attackMultiplier);
         }
+
+        ApplyActiveAttackEffects(playerHand, playerGold, ref _attackMultiplier);
 
         player.SetAttackMultiplier(_attackMultiplier);
     }
 
+    // 등록된 액티브 공격력 효과를 사용 순서대로 최종 공격력 계수에 반영합니다.
+    private void ApplyActiveAttackEffects(BlackjackHand playerHand, int playerGold, ref float attackMultiplier)
+    {
+        foreach (ActiveAttackRuntimeEffect _runtimeEffect in _activeAttackEffects)
+        {
+            float _effectValue = GetAttackEffectValue(_runtimeEffect.Effect, playerHand, playerGold);
+            switch (_runtimeEffect.Effect.Operation)
+            {
+                case ItemEffectOperation.Add:
+                    attackMultiplier += _effectValue;
+                    break;
+                case ItemEffectOperation.Multiply:
+                    attackMultiplier *= _effectValue;
+                    break;
+                case ItemEffectOperation.Set:
+                    attackMultiplier = _effectValue;
+                    break;
+            }
+        }
+    }
+
+    // 라운드가 끝난 효과는 제거하고 남은 효과는 다음 라운드 횟수를 하나 차감합니다.
+    private void AdvanceActiveAttackEffectDurations()
+    {
+        for (int _index = _activeAttackEffects.Count - 1; _index >= 0; _index--)
+        {
+            ActiveAttackRuntimeEffect _runtimeEffect = _activeAttackEffects[_index];
+            if (_runtimeEffect.RemainingRounds <= 1)
+            {
+                _activeAttackEffects.RemoveAt(_index);
+                continue;
+            }
+
+            _runtimeEffect.RemainingRounds--;
+        }
+    }
+
     // 한 패시브 아이템의 현재 시점에 적용 가능한 공격력 계수 효과를 계산값에 반영합니다.
-    private void ApplyAttackEffects(ItemInstance item, BlackjackHand playerHand, ItemTrigger trigger, MatchResult? matchResult, bool playerDoubleDownAttempted, int playerExtraDrawCount, ref float attackMultiplier)
+    private void ApplyAttackEffects(ItemInstance item, BlackjackHand playerHand, ItemTrigger trigger, MatchResult? matchResult, bool playerDoubleDownAttempted, int playerExtraDrawCount, int playerGold, ref float attackMultiplier)
     {
         foreach (ItemEffectData _effect in item.Definition.Effects)
         {
             if (!CanApplyAttackEffect(_effect, playerHand, trigger, matchResult, playerDoubleDownAttempted, playerExtraDrawCount)) continue;
 
             int _stackCount = Math.Max(1, item.StackCount);
+            float _effectValue = GetAttackEffectValue(_effect, playerHand, playerGold);
             switch (_effect.Operation)
             {
                 case ItemEffectOperation.Add:
-                    attackMultiplier += _effect.FloatValue * _stackCount;
+                    attackMultiplier += _effectValue * _stackCount;
                     break;
                 case ItemEffectOperation.Multiply:
-                    attackMultiplier *= Mathf.Pow(_effect.FloatValue, _stackCount);
+                    attackMultiplier *= Mathf.Pow(_effectValue, _stackCount);
                     break;
                 case ItemEffectOperation.Set:
-                    attackMultiplier = _effect.FloatValue;
+                    attackMultiplier = _effectValue;
                     break;
             }
         }
+    }
+
+    // 공격력 계수 효과가 고정 값인지 현재 플레이어 패 장수 비례 값인지 계산합니다.
+    private float GetAttackEffectValue(ItemEffectData effect, BlackjackHand playerHand, int playerGold)
+    {
+        return effect.ValueSource switch
+        {
+            ItemEffectValueSource.PlayerHandCardCount => playerHand == null ? 0f : effect.FloatValue * playerHand.Cards.Count,
+            ItemEffectValueSource.PlayerGold => CalculateGoldBasedAttackValue(effect, playerGold),
+            _ => effect.FloatValue
+        };
+    }
+
+    // 보유 골드를 Int 값 단위로 나눠 공격력 계수 증가량을 계산하고 두 번째 Float 값으로 상한을 제한합니다.
+    private float CalculateGoldBasedAttackValue(ItemEffectData effect, int playerGold)
+    {
+        int _requiredGold = Math.Max(1, effect.IntValue);
+        float _attackBonus = Math.Max(0, playerGold) / _requiredGold * effect.FloatValue;
+        return effect.SecondaryFloatValue > 0f ? Mathf.Min(_attackBonus, effect.SecondaryFloatValue) : _attackBonus;
     }
 
     // 현재 이벤트 시점과 카드 보유 조건을 만족하는 공격력 계수 효과인지 확인합니다.
@@ -456,6 +685,58 @@ public sealed class ItemEffectProcessor
                effect.DurationScope == ItemEffectDurationScope.NextRound;
     }
 
+    // 사용 즉시 발동해 이번 라운드 동안만 공격력 계수를 바꾸는 액티브인지 확인합니다.
+    private bool IsThisRoundActiveAttackEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.AttackMultiplier &&
+               effect.Trigger == ItemTrigger.OnUse &&
+               effect.Condition == ItemConditionType.None &&
+               effect.DurationScope == ItemEffectDurationScope.ThisRound;
+    }
+
+    // 사용 즉시 다음 플레이어 드로우를 예약하는 액티브 카드 보정 효과인지 확인합니다.
+    private bool IsActiveDrawModifierEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.DrawCardModifier &&
+               effect.Operation == ItemEffectOperation.Force &&
+               effect.Trigger == ItemTrigger.OnUse &&
+               effect.Condition == ItemConditionType.None &&
+               effect.DrawTarget == DrawModifierTarget.Player;
+    }
+
+    // 사용 즉시 플레이어에게 한 번의 공격을 막는 보호막을 부여하는 액티브인지 확인합니다.
+    private bool IsActiveBarrierEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.Barrier &&
+               effect.Trigger == ItemTrigger.OnUse &&
+               effect.Condition == ItemConditionType.None &&
+               (effect.Target == ItemEffectTarget.None || effect.Target == ItemEffectTarget.Player);
+    }
+
+    // 사용 즉시 플레이어의 체력을 회복하거나 비용으로 감소시키는 액티브인지 확인합니다.
+    private bool IsActiveHealEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.Heal &&
+               effect.Trigger == ItemTrigger.OnUse &&
+               effect.Condition == ItemConditionType.None &&
+               (effect.Target == ItemEffectTarget.None || effect.Target == ItemEffectTarget.Player);
+    }
+
+    // 고정 수치 또는 최대 체력 비율을 사용해 액티브 체력 변화량을 내림 정수로 계산합니다.
+    private int CalculateActiveHealEffectAmount(Player player, ItemEffectData effect)
+    {
+        if (effect.ValueSource == ItemEffectValueSource.PlayerMaxHpPercent)
+        {
+            return Mathf.FloorToInt(player.MaxHp * effect.FloatValue);
+        }
+
+        return effect.IntValue > 0 ? effect.IntValue : Mathf.FloorToInt(effect.FloatValue);
+    }
+
     // 피격 뒤 확률적으로 보호막 하나를 부여하는 패시브 효과인지 확인합니다.
     private bool IsDamageTakenBarrierEffect(ItemEffectData effect)
     {
@@ -499,6 +780,40 @@ public sealed class ItemEffectProcessor
                (effect.DurationScope == ItemEffectDurationScope.None || effect.DurationScope == ItemEffectDurationScope.Permanent);
     }
 
+    // 조건 없이 영구적으로 상점 아이템 가격을 할인하는 효과인지 확인합니다.
+    private bool IsPermanentShopDiscountEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.Shop &&
+               effect.Operation == ItemEffectOperation.Add &&
+               effect.Trigger == ItemTrigger.None &&
+               effect.Condition == ItemConditionType.None &&
+               (effect.DurationScope == ItemEffectDurationScope.None || effect.DurationScope == ItemEffectDurationScope.Permanent);
+    }
+
+    // 다음 라운드 시작 시 확률적으로 플레이어 초기 패를 블랙잭으로 고정하는 효과인지 확인합니다.
+    private bool IsNextRoundBlackjackEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.DrawCardModifier &&
+               effect.Operation == ItemEffectOperation.Force &&
+               effect.Trigger == ItemTrigger.RoundStart &&
+               effect.Condition == ItemConditionType.None &&
+               effect.DrawScope == DrawModifierScope.NextRoundOpeningHand &&
+               effect.DrawTarget == DrawModifierTarget.Player &&
+               effect.DrawMode == DrawModifierMode.GuaranteeBlackjack;
+    }
+
+    // 몬스터가 버스트로 패배했을 때 플레이어 승리를 블랙잭으로 취급하는 효과인지 확인합니다.
+    private bool IsMonsterBustBlackjackEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.MatchOutcome &&
+               effect.Operation == ItemEffectOperation.Force &&
+               effect.Trigger == ItemTrigger.OnMatchEnd &&
+               effect.Condition == ItemConditionType.MonsterBust;
+    }
+
     // 사용 즉시 플레이어 공격력 계수에 수치를 곱해 피해를 주는 액티브 효과인지 확인합니다.
     private bool IsActiveDirectDamageEffect(ItemEffectData effect)
     {
@@ -536,5 +851,18 @@ public sealed class ItemEffectProcessor
                effect.Trigger == ItemTrigger.OnDamageDealt &&
                effect.Condition == ItemConditionType.None &&
                (effect.DurationScope == ItemEffectDurationScope.None || effect.DurationScope == ItemEffectDurationScope.Permanent);
+    }
+
+    // 여러 라운드 동안 유지할 액티브 공격력 계수 효과의 남은 라운드 정보를 보관합니다.
+    private sealed class ActiveAttackRuntimeEffect
+    {
+        public ItemEffectData Effect { get; }
+        public int RemainingRounds { get; set; }
+
+        public ActiveAttackRuntimeEffect(ItemEffectData effect, int remainingRounds)
+        {
+            Effect = effect;
+            RemainingRounds = remainingRounds;
+        }
     }
 }

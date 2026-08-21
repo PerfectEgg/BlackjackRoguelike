@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "J \uBAA8\uC591 \uB9C9\uB300 \uC0AC\uD0D5"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "J \uBAA8\uC591 \uB9C9\uB300 \uC0AC\uD0D5"
-  Icon: {fileID: 0}
+  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   Description: "J \uBCF4\uC720 \uC2DC \uACF5\uACA9\uB825 \uACC4\uC218 +0.25 \uCD94\uAC00"
   ItemType: 0
   Rarity: 0
@@ -31,6 +31,7 @@ MonoBehaviour:
     RequiredCardCount: 1
     IntValue: 0
     FloatValue: 0.25
+    ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 2
     Duration: 1

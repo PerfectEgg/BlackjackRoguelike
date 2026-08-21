@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
+  m_Name: "\uCEE4\uD53C\uD5A5 \uD1A0\uD53C"
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  ItemName: "\uCEE4\uD53C\uD5A5 \uD1A0\uD53C"
+  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  Description: "\uCD5C\uB300 \uCCB4\uB825 50% \uD68C\uBCF5, \uB2E8 \uC774\uBC88 \uB77C\uC6B4\uB4DC\uC5D0\uC11C
+    \uACF5\uACA9\uB825 \uACC4\uC218 0"
+  ItemType: 1
+  Rarity: 0
+  Effects:
+  - Category: 3
+    Operation: 1
+    Trigger: 7
+    Target: 1
+    ActiveAction: 0
+    Condition: 0
+    ConditionTarget: 0
+    ConditionValue: 0
+    CardConditionMode: 0
+    CardConditionTarget: 0
+    RequiredCardRank: 0
+    RequiredCardSuit: 0
+    RequiredCardCount: 0
+    IntValue: 0
+    FloatValue: 0.5
+    ValueSource: 3
+    SecondaryFloatValue: 0
+    DurationScope: 0
+    Duration: 0
+    CardManipulationScope: 0
+    CardManipulationMode: 0
+    CardManipulationCount: 0
+    UsageLimit: 0
+    ExclusiveGroup: 0
+    DrawScope: 0
+    DrawTarget: 0
+    DrawMode: 0
+    DrawCardRank: 0
+    DrawCardSuit: 0
+  - Category: 1
+    Operation: 3
+    Trigger: 7
+    Target: 1
+    ActiveAction: 0
+    Condition: 0
+    ConditionTarget: 0
+    ConditionValue: 0
+    CardConditionMode: 0
+    CardConditionTarget: 0
+    RequiredCardRank: 0
+    RequiredCardSuit: 0
+    RequiredCardCount: 0
+    IntValue: 0
+    FloatValue: 0
+    ValueSource: 0
+    SecondaryFloatValue: 0
+    DurationScope: 2
+    Duration: 1
+    CardManipulationScope: 0
+    CardManipulationMode: 0
+    CardManipulationCount: 0
+    UsageLimit: 0
+    ExclusiveGroup: 0
+    DrawScope: 0
+    DrawTarget: 0
+    DrawMode: 0
+    DrawCardRank: 0
+    DrawCardSuit: 0

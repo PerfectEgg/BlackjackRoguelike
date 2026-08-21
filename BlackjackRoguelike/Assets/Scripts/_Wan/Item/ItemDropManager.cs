@@ -21,13 +21,14 @@ public class ItemDropManager
     {
         if (itemDatabase == null) return new StageItemDropResult(new List<ItemDefinition>(), new List<ItemDefinition>());
 
-        List<ItemDefinition> _passiveCandidates = RollUniqueItems(itemDatabase, ItemType.Passive, 2, ownedPassiveItems);
-        List<ItemDefinition> _activeCandidates = RollUniqueItems(itemDatabase, ItemType.Active, 3, null);
+        List<ItemDefinition> _passiveCandidates = GenerateUniqueItems(itemDatabase, ItemType.Passive, 2, ownedPassiveItems);
+        List<ItemDefinition> _activeCandidates = GenerateUniqueItems(itemDatabase, ItemType.Active, 3, null);
         return new StageItemDropResult(_passiveCandidates, _activeCandidates);
     }
 
     // 기존 제외 목록과 이미 뽑힌 후보를 모두 제외해 중복 없는 후보 목록을 만듭니다.
-    private List<ItemDefinition> RollUniqueItems(ItemDatabase itemDatabase, ItemType itemType, int count, ISet<ItemDefinition> excludedItems)
+    // 동일한 등급 확률과 중복 제외 규칙으로 지정한 수만큼 아이템 후보를 생성합니다.
+    public List<ItemDefinition> GenerateUniqueItems(ItemDatabase itemDatabase, ItemType itemType, int count, ISet<ItemDefinition> excludedItems)
     {
         HashSet<ItemDefinition> _excludedItems = excludedItems != null
             ? new HashSet<ItemDefinition>(excludedItems)
