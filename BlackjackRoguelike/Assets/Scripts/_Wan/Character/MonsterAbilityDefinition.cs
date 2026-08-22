@@ -4,15 +4,35 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Blackjack/Monster Ability Definition")]
 public class MonsterAbilityDefinition : ScriptableObject
 {
-    [Tooltip("UI에 표시할 능력 이름입니다.")]
-    public string AbilityName;
+    [Header("표시 정보")]
     [TextArea]
     [Tooltip("UI 툴팁에 표시할 능력 설명입니다.")]
     public string Description;
-    [Tooltip("능력을 확인하거나 적용할 시점입니다.")]
-    public ItemTrigger Trigger;
+    [Header("능력 동작")]
+    [Tooltip("몬스터 기믹의 구체적인 동작입니다.")]
+    public MonsterAbilityType AbilityType;
     [Tooltip("능력의 정수 수치입니다.")]
     public int Value;
     [Tooltip("능력의 소수 수치입니다.")]
     public float FloatValue;
+
+    // 아이콘 호버 UI가 특성 설명을 표시할 때 사용합니다.
+    public string GetTooltipText()
+    {
+        return Description;
+    }
+}
+
+// 몬스터가 스테이지 전투에서 사용할 수 있는 고유 기믹 종류입니다.
+public enum MonsterAbilityType
+{
+    None,
+    HideNextDealerCard,
+    RemoveLastDealerCardOnBust,
+    DeclareRankPermanentAttack,
+    DeclareRankHeal,
+    CardColorBonus,
+    DealerScoreAdjustment,
+    HeartExecution,
+    ForceBlackJackAndBlackJackBonus
 }

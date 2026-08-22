@@ -2,6 +2,7 @@
 public enum MatchState
 {
     OpeningDeal,
+    PlayerForcedDraw,
     PlayerTurn,
     DealerTurn,
     Finished

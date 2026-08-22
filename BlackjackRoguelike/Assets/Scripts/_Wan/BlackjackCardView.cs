@@ -18,6 +18,16 @@ public sealed class BlackjackCardView : MonoBehaviour
             : new Color(0.08f, 0.1f, 0.14f);
     }
 
+    // 카드 값이 공개되기 전까지 카드 뒷면처럼 물음표로 표시합니다.
+    public void SetHidden()
+    {
+        if (_cardText == null) _cardText = GetComponentInChildren<TMP_Text>();
+        if (_cardText == null) return;
+
+        _cardText.text = "?\n?";
+        _cardText.color = new Color(0.42f, 0.42f, 0.42f);
+    }
+
     // 카드 등급을 짧은 표기로 변환합니다.
     private string GetRankText(CardRank rank)
     {

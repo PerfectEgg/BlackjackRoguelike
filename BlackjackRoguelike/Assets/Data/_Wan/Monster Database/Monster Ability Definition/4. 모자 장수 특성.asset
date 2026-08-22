@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4855189c965cf0244b6edd0ebc7c3b78, type: 3}
+  m_Name: "4. \uBAA8\uC790 \uC7A5\uC218 \uD2B9\uC131"
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterAbilityDefinition
+  Description: "\uB77C\uC6B4\uB4DC\uB9C8\uB2E4 \uB4DC\uB85C\uC6B0 \uC774\uD6C4 \uBC84\uC2A4\uD2B8
+    \uC2DC \uB9C8\uC9C0\uB9C9 \uD328 \uC0AD\uC81C"
+  AbilityType: 2
+  Value: 0
+  FloatValue: 0

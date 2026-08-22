@@ -2636,6 +2636,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BlackjackConsoleDemo
   _monsterDatabase: {fileID: 11400000, guid: f9697c25a0096e44da624c788679f24f, type: 2}
   _itemDatabase: {fileID: 11400000, guid: ec33dae4b4bf7e248a2c0fed0e3b1eb9, type: 2}
+  _shopVisitStages: 050000000a000000
   _itemIconPrefab: {fileID: -8010184010611485848, guid: c8ffcff876428ba49b6331f0c2da6c05, type: 3}
   _itemDescriptionPrefab: {fileID: 5510706327047167579, guid: ac41f394eb03fe34c98bbb6e1f127d52, type: 3}
   _itemDescriptionRoot: {fileID: 287695733}

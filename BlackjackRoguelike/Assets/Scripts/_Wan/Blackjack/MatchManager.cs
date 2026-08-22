@@ -11,10 +11,18 @@ public sealed class MatchManager
     private readonly MatchRules _rules;
     private readonly Queue<Card> _forcedOpeningPlayerCards = new();
     private readonly Queue<CardRank> _forcedPlayerDrawRanks = new();
+    private readonly Queue<Card> _forcedDealerDrawCards = new();
     private readonly Queue<ItemEffectData> _activePlayerDrawModifiers = new();
+    private readonly Random _random = new();
     private int _openingDrawIndex;
     private int _playerScoreAdjustmentRange;
+    private int _dealerScoreAdjustmentRange;
+    private int _nextRoundDealerForcedDrawStacks;
+    private int _currentRoundDealerForcedDrawsRemaining;
+    private int _nextRoundPlayerForcedDraws;
+    private int _currentRoundPlayerForcedDrawsRemaining;
     private bool _forceNextPlayerOpeningBlackjack;
+    private bool _dealerCanDrawAboveStandOnce;
 
     // 플레이어의 현재 패입니다.
     public BlackjackHand PlayerHand { get; }
@@ -28,14 +36,20 @@ public sealed class MatchManager
     public bool CanDoubleDown => IsMatchActive && State == MatchState.PlayerTurn && PlayerHand.Cards.Count == _rules.StartingHandSize;
     // 초기 패 전체 교환을 실행할 수 있는지 나타냅니다.
     public bool CanSwapInitialPlayerHand => IsMatchActive && State == MatchState.PlayerTurn && PlayerHand.Cards.Count == _rules.StartingHandSize;
+    // 양측 패 교환 액티브를 사용할 수 있는지 나타냅니다.
+    public bool CanSwapHands => IsMatchActive && State != MatchState.OpeningDeal;
+    // 플레이어 패 카드 한 장을 파괴하고 다시 뽑을 수 있는지 나타냅니다.
+    public bool CanRerollRandomPlayerCard => IsMatchActive && State == MatchState.PlayerTurn && PlayerHand.Cards.Count > 0;
     // 아이템 보정이 반영된 플레이어 판정 점수입니다.
     public int PlayerScore => GetAdjustedPlayerScore();
     // 몬스터의 판정 점수입니다.
-    public int DealerScore => DealerHand.Score;
+    public int DealerScore => GetAdjustedDealerScore();
     // 현재 매치의 목표 점수입니다.
     public int TargetScore => _rules.TargetScore;
     // 초기 패를 제외하고 플레이어가 추가로 뽑은 카드 수입니다.
     public int PlayerExtraDrawCount => Math.Max(0, PlayerHand.Cards.Count - _rules.StartingHandSize);
+    // 다음 라운드에 예약된 몬스터 강제 드로우 스택 수입니다. 최대 2스택입니다.
+    public int NextRoundDealerForcedDrawStacks => _nextRoundDealerForcedDrawStacks;
 
     // 카드 한 장이 공개될 때 카드와 해당 패의 합계를 전달합니다.
     public event Action<bool, Card, int> CardDrawn;
@@ -58,7 +72,13 @@ public sealed class MatchManager
     {
         PlayerHand.Clear();
         DealerHand.Clear();
+        _forcedDealerDrawCards.Clear();
         PrepareForcedOpeningCards();
+        _currentRoundDealerForcedDrawsRemaining = _nextRoundDealerForcedDrawStacks * 2;
+        _nextRoundDealerForcedDrawStacks = 0;
+        _currentRoundPlayerForcedDrawsRemaining = _nextRoundPlayerForcedDraws;
+        _nextRoundPlayerForcedDraws = 0;
+        _dealerCanDrawAboveStandOnce = false;
         _openingDrawIndex = 0;
         IsMatchActive = true;
         ChangeState(MatchState.OpeningDeal);
@@ -68,6 +88,25 @@ public sealed class MatchManager
     public void SetPlayerScoreAdjustmentRange(int adjustmentRange)
     {
         _playerScoreAdjustmentRange = Math.Max(0, adjustmentRange);
+    }
+
+    // 몬스터 능력이 제공하는 딜러 점수 보정 범위를 설정합니다.
+    public void SetDealerScoreAdjustmentRange(int adjustmentRange)
+    {
+        _dealerScoreAdjustmentRange = Math.Max(0, adjustmentRange);
+    }
+
+    // 몬스터 능력이 예약한 다음 딜러 드로우 카드를 등록합니다.
+    public void QueueForcedDealerDraw(CardSuit suit, CardRank rank)
+    {
+        if (suit == CardSuit.None || rank == CardRank.None) return;
+        _forcedDealerDrawCards.Enqueue(new Card(suit, rank));
+    }
+
+    // 버스트 카드 제거 기회가 있을 때 딜러가 17 이상에서도 한 번 더 드로우하도록 설정합니다.
+    public void SetDealerCanDrawAboveStandOnce(bool canDraw)
+    {
+        _dealerCanDrawAboveStandOnce = canDraw;
     }
 
     // 다음 새 매치의 플레이어 초기 패를 스페이드 A와 스페이드 J 블랙잭으로 고정합니다.
@@ -101,7 +140,8 @@ public sealed class MatchManager
     // 현재 구현된 예약 드로우 보정인지 확인합니다.
     public bool CanQueueActivePlayerDrawModifier(ItemEffectData effect)
     {
-        if (effect == null || effect.DrawTarget != DrawModifierTarget.Player) return false;
+        if (effect == null) return false;
+        if (effect.DrawTarget != DrawModifierTarget.Player && effect.Target != ItemEffectTarget.Player) return false;
         if (effect.DrawScope is not (DrawModifierScope.NextDrawThisStage or DrawModifierScope.NextRoundOpeningHand)) return false;
 
         return effect.DrawMode switch
@@ -120,6 +160,21 @@ public sealed class MatchManager
         _activePlayerDrawModifiers.Clear();
     }
 
+    // 다음 라운드 딜러 턴에 강제 드로우 2장을 추가합니다. 최대 2스택까지만 예약할 수 있습니다.
+    public bool TryAddNextRoundDealerForcedDrawStack()
+    {
+        if (_nextRoundDealerForcedDrawStacks >= 2) return false;
+
+        _nextRoundDealerForcedDrawStacks++;
+        return true;
+    }
+
+    // 다음 라운드 초기 패 배분 뒤 플레이어가 강제로 뽑을 카드 수를 예약합니다.
+    public void AddNextRoundPlayerForcedDraws(int drawCount)
+    {
+        _nextRoundPlayerForcedDraws += Math.Max(1, drawCount);
+    }
+
     // 초기 카드 배분 또는 딜러 턴을 한 장씩 진행합니다.
     public void Advance()
     {
@@ -135,15 +190,38 @@ public sealed class MatchManager
             if (_openingDrawIndex >= _rules.StartingHandSize * 2)
             {
                 if (PlayerHand.IsBlackjack || DealerHand.IsBlackjack) EndMatch(DetermineOutcome());
+                else if (_currentRoundPlayerForcedDrawsRemaining > 0) ChangeState(MatchState.PlayerForcedDraw);
                 else ChangeState(MatchState.PlayerTurn);
             }
             return;
         }
 
+        if (State == MatchState.PlayerForcedDraw)
+        {
+            DrawToPlayer();
+            _currentRoundPlayerForcedDrawsRemaining--;
+            if (PlayerScore > _rules.TargetScore) EndMatch(MatchOutcome.DealerWin);
+            else if (_currentRoundPlayerForcedDrawsRemaining <= 0) ChangeState(MatchState.PlayerTurn);
+            return;
+        }
+
         if (State == MatchState.DealerTurn)
         {
-            if (DealerHand.Score < _rules.DealerStandScore) DrawToDealer();
-            if (DealerHand.Score >= _rules.DealerStandScore || DealerHand.Score > _rules.TargetScore) EndMatch(DetermineOutcome());
+            if (_currentRoundDealerForcedDrawsRemaining > 0)
+            {
+                DrawToDealer();
+                _currentRoundDealerForcedDrawsRemaining--;
+                if (DealerScore > _rules.TargetScore || (_currentRoundDealerForcedDrawsRemaining == 0 && DealerScore >= _rules.DealerStandScore))
+                {
+                    EndMatch(DetermineOutcome());
+                }
+                return;
+            }
+
+            bool _drawAboveStand = DealerScore >= _rules.DealerStandScore && _dealerCanDrawAboveStandOnce;
+            if (DealerScore < _rules.DealerStandScore || _drawAboveStand) DrawToDealer();
+            if (_drawAboveStand) _dealerCanDrawAboveStandOnce = false;
+            if (DealerScore >= _rules.DealerStandScore || DealerScore > _rules.TargetScore) EndMatch(DetermineOutcome());
         }
     }
 
@@ -187,6 +265,48 @@ public sealed class MatchManager
         return true;
     }
 
+    // 플레이어와 딜러의 카드 및 초기 에이스 처리 상태를 서로 교환합니다.
+    public bool TrySwapHands()
+    {
+        if (!CanSwapHands) return false;
+
+        Card[] _playerCards = new Card[PlayerHand.Cards.Count];
+        Card[] _dealerCards = new Card[DealerHand.Cards.Count];
+        for (int _index = 0; _index < PlayerHand.Cards.Count; _index++) _playerCards[_index] = PlayerHand.Cards[_index];
+        for (int _index = 0; _index < DealerHand.Cards.Count; _index++) _dealerCards[_index] = DealerHand.Cards[_index];
+
+        int _playerOpeningHighAceIndex = PlayerHand.OpeningHighAceIndex;
+        int _dealerOpeningHighAceIndex = DealerHand.OpeningHighAceIndex;
+        PlayerHand.ReplaceCards(_dealerCards, _dealerOpeningHighAceIndex);
+        DealerHand.ReplaceCards(_playerCards, _playerOpeningHighAceIndex);
+
+        if (PlayerScore > _rules.TargetScore)
+        {
+            EndMatch(MatchOutcome.DealerWin);
+            return true;
+        }
+
+        if (PlayerHand.IsBlackjack || DealerHand.IsBlackjack || (State == MatchState.DealerTurn && DealerScore >= _rules.DealerStandScore))
+        {
+            EndMatch(DetermineOutcome());
+            return true;
+        }
+
+        StateChanged?.Invoke(State);
+        return true;
+    }
+
+    // 플레이어 패에서 무작위 카드 한 장을 파괴하고 같은 자리에 새 카드 한 장을 다시 뽑습니다.
+    public bool TryRerollRandomPlayerCard()
+    {
+        if (!CanRerollRandomPlayerCard) return false;
+        if (!PlayerHand.TryRemoveRandomCard(_random, out _)) return false;
+
+        DrawToPlayer();
+        if (PlayerScore > _rules.TargetScore) EndMatch(MatchOutcome.DealerWin);
+        return true;
+    }
+
     // 플레이어 패의 마지막 카드를 삭제합니다. 버스트 구제 아이템에서 사용합니다.
     public bool TryRemoveLastPlayerCard(out Card removedCard)
     {
@@ -197,6 +317,27 @@ public sealed class MatchManager
         }
 
         return PlayerHand.TryRemoveLastCard(out removedCard);
+    }
+
+    // 몬스터 패의 마지막 카드를 삭제합니다. 버스트 구제 몬스터 능력에서 사용합니다.
+    public bool TryRemoveLastDealerCard(out Card removedCard)
+    {
+        if (!IsMatchActive)
+        {
+            removedCard = default;
+            return false;
+        }
+
+        return DealerHand.TryRemoveLastCard(out removedCard);
+    }
+
+    // 진행 중인 매치를 즉시 무승부로 종료하고 일반 매치 종료 이벤트를 발생시킵니다.
+    public bool ForceCurrentRoundDraw()
+    {
+        if (!IsMatchActive) return false;
+
+        EndMatch(MatchOutcome.Draw);
+        return true;
     }
 
     // 아이템 직접 피해 등으로 몬스터가 처치됐을 때 결과 피해 없이 현재 매치를 종료합니다.
@@ -210,7 +351,7 @@ public sealed class MatchManager
     // 딜러 턴을 시작하거나, 추가 드로우가 필요 없으면 즉시 결과를 확정합니다.
     private void BeginDealerTurn()
     {
-        if (DealerHand.Score >= _rules.DealerStandScore) EndMatch(DetermineOutcome());
+        if (DealerScore >= _rules.DealerStandScore && !_dealerCanDrawAboveStandOnce) EndMatch(DetermineOutcome());
         else ChangeState(MatchState.DealerTurn);
     }
 
@@ -225,7 +366,7 @@ public sealed class MatchManager
     // 딜러에게 카드 한 장을 주고 현재 점수를 이벤트로 알립니다.
     private void DrawToDealer(bool isOpeningCard = false)
     {
-        Card _card = _deck.Draw();
+        Card _card = DrawForcedOrRandomDealerCard();
         DealerHand.Add(_card, isOpeningCard);
         CardDrawn?.Invoke(false, _card, DealerHand.Score);
     }
@@ -234,7 +375,7 @@ public sealed class MatchManager
     private MatchOutcome DetermineOutcome()
     {
         bool _playerBust = PlayerScore > _rules.TargetScore;
-        bool _dealerBust = DealerHand.Score > _rules.TargetScore;
+        bool _dealerBust = DealerScore > _rules.TargetScore;
         if (_playerBust) return MatchOutcome.DealerWin;
         if (_dealerBust) return MatchOutcome.PlayerWin;
         if (PlayerScore > DealerScore) return MatchOutcome.PlayerWin;
@@ -249,6 +390,16 @@ public sealed class MatchManager
         int _differenceToTarget = _rules.TargetScore - _rawScore;
         if (_differenceToTarget > 0) return _rawScore + Math.Min(_playerScoreAdjustmentRange, _differenceToTarget);
         if (_differenceToTarget < 0) return _rawScore - Math.Min(_playerScoreAdjustmentRange, -_differenceToTarget);
+        return _rawScore;
+    }
+
+    // 몬스터 점수를 목표 점수 방향으로 지정한 범위만큼 보정합니다.
+    private int GetAdjustedDealerScore()
+    {
+        int _rawScore = DealerHand.Score;
+        int _differenceToTarget = _rules.TargetScore - _rawScore;
+        if (_differenceToTarget > 0) return _rawScore + Math.Min(_dealerScoreAdjustmentRange, _differenceToTarget);
+        if (_differenceToTarget < 0) return _rawScore - Math.Min(_dealerScoreAdjustmentRange, -_differenceToTarget);
         return _rawScore;
     }
 
@@ -301,6 +452,15 @@ public sealed class MatchManager
     {
         Card _lastCard = PlayerHand.Cards[PlayerHand.Cards.Count - 1];
         return _deck.DrawSpecificCard(_lastCard.Suit, _lastCard.Rank);
+    }
+
+    // 몬스터 능력이 예약한 카드가 있으면 우선 뽑고, 없으면 일반 덱에서 뽑습니다.
+    private Card DrawForcedOrRandomDealerCard()
+    {
+        if (_forcedDealerDrawCards.Count == 0) return _deck.Draw();
+
+        Card _forcedCard = _forcedDealerDrawCards.Dequeue();
+        return _deck.DrawSpecificCard(_forcedCard.Suit, _forcedCard.Rank);
     }
 
     // 매치를 닫고 전투 시스템이 사용할 결과를 발행합니다.

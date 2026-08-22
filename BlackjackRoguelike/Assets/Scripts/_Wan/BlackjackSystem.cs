@@ -10,6 +10,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     [Header("게임 데이터")]
     [SerializeField] private MonsterDatabase _monsterDatabase;
     [SerializeField] private ItemDatabase _itemDatabase;
+    [Tooltip("해당 스테이지 진입 전에 상점을 엽니다. 디버그용으로 2를 넣으면 1스테이지 처치 뒤 상점이 열립니다.")]
+    [SerializeField] private int[] _shopVisitStages = { 5, 10 };
 
     [Header("공용 아이템 UI 프리팹")]
     [SerializeField] private ItemIconView _itemIconPrefab;
@@ -95,6 +97,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_rewardPanel != null) _rewardPanel.SetActive(false);
         if (_shopPanel != null) _shopPanel.SetActive(false);
         if (_itemDatabase != null) _game.ConfigureItemDrops(_itemDatabase);
+        _game.ConfigureShopVisitStages(_shopVisitStages);
         if (_monsterDatabase != null) _game.StartRun(_monsterDatabase);
         else _game.StartMatch();
 
@@ -162,6 +165,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void OnMatchStateChanged(MatchState state)
     {
         RefreshBattleUi();
+        if (_inventoryPanel != null && _inventoryPanel.activeSelf) RefreshInventoryUi();
     }
 
     // 매치가 끝난 뒤 전투 정보를 갱신합니다.
@@ -321,10 +325,10 @@ public sealed class BlackjackSystem : MonoBehaviour
             {
                 int _offerIndex = _index;
                 ShopOffer _offer = _shop.Offers[_index];
-                string _footerText = _offer.IsSold ? "SOLD OUT" : $"{_offer.Price} GOLD";
+                string _footerText = _offer.IsSold ? "SOLD OUT" : (_game.HasFreeShopPurchaseTicket ? $"{_offer.Price} GOLD | TICKET" : $"{_offer.Price} GOLD");
                 ItemIconView _view = CreateItemIcon(_offer.Item, _shopOfferContent.transform, false, () => TryBuyShopOffer(_offerIndex), _footerText);
                 if (_view == null) continue;
-                _view.SetInteractable(!_offer.IsSold && _game.Gold >= _offer.Price);
+                _view.SetInteractable(!_offer.IsSold && (_game.Gold >= _offer.Price || _game.HasFreeShopPurchaseTicket));
                 _shopOfferViews.Add(_view);
             }
         }
@@ -336,7 +340,9 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 지정한 상점 진열 아이템을 구매하고 버튼 표기를 갱신합니다.
     private void TryBuyShopOffer(int index)
     {
-        if (_game.TryBuyShopOffer(index)) RefreshShopUi();
+        if (!_game.TryBuyShopOffer(index)) return;
+        RefreshInventoryUi();
+        RefreshShopUi();
     }
 
     // 새로 고침 비용을 지불하고 상점의 모든 진열 칸을 다시 구성합니다.
@@ -358,9 +364,15 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         if (_game == null) return;
         RefreshStatusUi();
-        RebuildCards(_game.Match.DealerHand, _dealerCardContainer, _dealerCardViews);
+        bool _hideDealerCards = _game.MonsterAbilities.HasHiddenDealerCard && _game.Match.State is not (MatchState.DealerTurn or MatchState.Finished);
+        RebuildCards(_game.Match.DealerHand, _dealerCardContainer, _dealerCardViews, true, _hideDealerCards);
         RebuildCards(_game.Match.PlayerHand, _playerCardContainer, _playerCardViews);
-        if (_dealerScoreText != null) _dealerScoreText.text = GetScoreText("MONSTER HAND", _game.Match.DealerHand, _game.Match.DealerScore, _game.Match.TargetScore);
+        if (_dealerScoreText != null)
+        {
+            _dealerScoreText.text = _hideDealerCards
+                ? $"MONSTER HAND  |  SCORE {_game.MonsterAbilities.GetVisibleDealerScore(_game.Match.DealerHand)} + ? / {_game.Match.TargetScore}"
+                : GetScoreText("MONSTER HAND", _game.Match.DealerHand, _game.Match.DealerScore, _game.Match.TargetScore);
+        }
         if (_playerScoreText != null) _playerScoreText.text = GetScoreText("PLAYER HAND", _game.Match.PlayerHand, _game.Match.PlayerScore, _game.Match.TargetScore, _game.PlayerScoreAdjustmentRange);
 
         bool _isPlayerTurn = _game.Match.IsMatchActive && _game.Match.State == MatchState.PlayerTurn;
@@ -425,6 +437,7 @@ public sealed class BlackjackSystem : MonoBehaviour
                 : null;
             ItemIconView _view = CreateItemIcon(_item.Definition, content.transform, _item.IsUsed, _clickAction);
             if (_view == null) continue;
+            if (_item.Definition.ItemType == ItemType.Active) _view.SetInteractable(_game != null && _game.CanUseActiveItems && !_item.IsUsed);
             views.Add(_view);
         }
     }
@@ -482,7 +495,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     }
 
     // 카드 컨테이너의 폭에 따라 간격을 줄여 카드가 겹쳐 보이게 배치합니다.
-    private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews)
+    private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews, bool isDealer = false, bool hideDealerCards = false)
     {
         if (cardContainer == null || _cardTemplate == null) return;
         ClearCardViews(cardViews);
@@ -502,7 +515,8 @@ public sealed class BlackjackSystem : MonoBehaviour
             _cardTransform.anchorMin = _cardTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _cardTransform.pivot = new Vector2(0.5f, 0.5f);
             _cardTransform.anchoredPosition = new Vector2(_startX + _spacing * _index, 0f);
-            _cardView.SetCard(hand.Cards[_index]);
+            if (isDealer && hideDealerCards && _game.MonsterAbilities.IsDealerCardHidden(_index)) _cardView.SetHidden();
+            else _cardView.SetCard(hand.Cards[_index]);
             _cardView.transform.SetAsLastSibling();
             cardViews.Add(_cardView);
         }
@@ -524,6 +538,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         return _game.Match.State switch
         {
             MatchState.OpeningDeal => "SPACE: 시작 카드를 한 장씩 공개",
+            MatchState.PlayerForcedDraw => "SPACE: 강제 드로우 카드를 한 장씩 공개",
             MatchState.PlayerTurn => "카드를 선택하세요: HIT / STAND / DOUBLE DOWN",
             MatchState.DealerTurn => "SPACE: 몬스터의 다음 카드를 공개",
             _ => "N / R: 다음 라운드 시작 | B: 다음 패 블랙잭 | T: 다음 3장 7 고정"

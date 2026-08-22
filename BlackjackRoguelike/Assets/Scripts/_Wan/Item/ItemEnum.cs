@@ -117,8 +117,10 @@ public enum ActiveEffectAction
     MaxHpBet,
     [InspectorName("현재 라운드 무승부 강제")]
     ForceCurrentRoundDraw,
-    [InspectorName("상대 초기 패 2장 강제")]
+    [InspectorName("다음 라운드 몬스터 2장 강제 드로우")]
     ForceDealerOpeningHand,
+    [InspectorName("다음 라운드 플레이어 2장 강제 드로우")]
+    ForcePlayerNextRoundDraws,
     [InspectorName("양측 패 교환")]
     SwapHands,
     [InspectorName("덱 카드 파괴 후 재드로우")]
@@ -158,6 +160,8 @@ public enum ItemEffectValueSource
     PlayerScore,
     [InspectorName("버스트 당시 플레이어 점수")]
     PlayerBustScore,
+    [InspectorName("이번 라운드 체력 배팅값")]
+    CurrentRoundHpBet,
     [InspectorName("이번 공격의 실제 피해량")]
     DealtDamage
 }
@@ -203,7 +207,9 @@ public enum ItemConditionType
     [InspectorName("최소 골드")]
     GoldAtLeast,
     [InspectorName("스테이지 번호")]
-    StageNumber
+    StageNumber,
+    [InspectorName("체력 배팅 후 승리")]
+    HpBetVictory
 }
 
 // 카드와 무관한 조건을 판정할 대상입니다. None이면 대상 구분이 필요 없습니다.

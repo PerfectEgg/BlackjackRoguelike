@@ -7,7 +7,7 @@ public sealed class BlackjackHand
 {
     private readonly List<Card> _cards = new();
     private readonly int _targetScore;
-    private bool _hasOpeningHighAce;
+    private int _openingHighAceIndex = -1;
 
     // 현재 패입니다.
     public IReadOnlyList<Card> Cards => _cards;
@@ -17,6 +17,10 @@ public sealed class BlackjackHand
     public bool IsSoft { get; private set; }
     // 패에 에이스가 한 장 이상 있는지 나타냅니다.
     public bool HasAce => _cards.Any(card => card.Rank == CardRank.Ace);
+    // 현재 패에 11점으로 고정된 초기 에이스가 있는지 나타냅니다.
+    public bool HasOpeningHighAce => _openingHighAceIndex >= 0;
+    // 현재 패에서 11점으로 처리하는 초기 에이스의 카드 인덱스입니다. 없으면 -1입니다.
+    public int OpeningHighAceIndex => _openingHighAceIndex;
     // 블랙잭 여부입니다.
     public bool IsBlackjack => _cards.Count == 2 && Score == 21;
 
@@ -33,7 +37,7 @@ public sealed class BlackjackHand
     public void Add(Card card, bool isOpeningCard = false)
     {
         _cards.Add(card);
-        if (isOpeningCard && !_hasOpeningHighAce && card.Rank == CardRank.Ace) _hasOpeningHighAce = true;
+        if (isOpeningCard && _openingHighAceIndex < 0 && card.Rank == CardRank.Ace) _openingHighAceIndex = _cards.Count - 1;
         RecalculateScore();
     }
 
@@ -48,8 +52,7 @@ public sealed class BlackjackHand
 
         int _lastIndex = _cards.Count - 1;
         removedCard = _cards[_lastIndex];
-        _cards.RemoveAt(_lastIndex);
-        RecalculateScore();
+        RemoveCardAt(_lastIndex);
         LastCardRemoved?.Invoke(removedCard, Score);
         return true;
     }
@@ -58,9 +61,39 @@ public sealed class BlackjackHand
     public void Clear()
     {
         _cards.Clear();
-        _hasOpeningHighAce = false;
+        _openingHighAceIndex = -1;
         Score = 0;
         IsSoft = false;
+    }
+
+    // 다른 패과 교환할 때 카드 목록과 초기 에이스의 11점 처리 상태를 함께 설정합니다.
+    public void ReplaceCards(IReadOnlyList<Card> cards, int openingHighAceIndex)
+    {
+        _cards.Clear();
+        if (cards != null)
+        {
+            for (int _index = 0; _index < cards.Count; _index++) _cards.Add(cards[_index]);
+        }
+
+        _openingHighAceIndex = openingHighAceIndex >= 0 && openingHighAceIndex < _cards.Count && _cards[openingHighAceIndex].Rank == CardRank.Ace
+            ? openingHighAceIndex
+            : -1;
+        RecalculateScore();
+    }
+
+    // 패에서 무작위 카드 한 장을 제거합니다. 제거된 카드는 덱으로 반환하지 않습니다.
+    public bool TryRemoveRandomCard(Random random, out Card removedCard)
+    {
+        if (_cards.Count == 0 || random == null)
+        {
+            removedCard = default;
+            return false;
+        }
+
+        int _cardIndex = random.Next(_cards.Count);
+        removedCard = _cards[_cardIndex];
+        RemoveCardAt(_cardIndex);
+        return true;
     }
 
     // Console 또는 UI용 카드 목록을 반환합니다.
@@ -70,8 +103,17 @@ public sealed class BlackjackHand
     private void RecalculateScore()
     {
         int _score = _cards.Sum(card => card.BaseValue);
-        IsSoft = _hasOpeningHighAce;
-        if (_hasOpeningHighAce) _score += 10;
+        IsSoft = _openingHighAceIndex >= 0;
+        if (_openingHighAceIndex >= 0) _score += 10;
         Score = _score;
+    }
+
+    // 지정한 인덱스의 카드를 제거하고 초기 에이스 인덱스와 점수를 함께 갱신합니다.
+    private void RemoveCardAt(int cardIndex)
+    {
+        _cards.RemoveAt(cardIndex);
+        if (_openingHighAceIndex == cardIndex) _openingHighAceIndex = -1;
+        else if (_openingHighAceIndex > cardIndex) _openingHighAceIndex--;
+        RecalculateScore();
     }
 }

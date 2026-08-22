@@ -10,12 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43b7d48707e3dc04982b680184709af0, type: 3}
-  m_Name: 5
+  m_Name: "9. \uD558\uD2B8 \uC5EC\uC655"
   m_EditorClassIdentifier: Assembly-CSharp::MonsterDefinition
-  StageNumber: 5
-  MonsterName: "3\uC6D4 \uD1A0\uB07C"
+  StageNumber: 9
+  MonsterName: "\uD558\uD2B8 \uC5EC\uC655"
+  Description: "\uCC98\uD615\uD558\uB77C\uB294 \uB9D0\uC744 \uB0A8\uBC1C\uD558\uC9C0\uB9CC
+    \uC2E4\uC81C\uB85C \uC774\uB8E8\uC5B4\uC9C0\uC9C0\uB294 \uC54A\uC74C"
   Icon: {fileID: 0}
-  MaxHp: 233
-  AttackMultiplier: 1.33
-  DropGold: 333
-  Abilities: []
+  MaxHp: 500
+  AttackMultiplier: 3
+  DropGold: 1000
+  Abilities:
+  - {fileID: 11400000, guid: e7a81cf43027cee4a8b4b3ae7a1ddbc5, type: 2}

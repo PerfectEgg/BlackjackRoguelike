@@ -9,6 +9,9 @@ public class MonsterDefinition : ScriptableObject
     [Range(1, 10)] public int StageNumber;
     [Tooltip("전투와 UI에 표시할 몬스터 이름입니다.")]
     public string MonsterName;
+    [TextArea]
+    [Tooltip("몬스터 아이콘에 마우스를 올렸을 때 표시할 기본 설명입니다.")]
+    public string Description;
     [Tooltip("몬스터를 표시할 스프라이트입니다.")]
     public Sprite Icon;
     [Tooltip("몬스터의 최대 체력입니다.")]
@@ -17,6 +20,23 @@ public class MonsterDefinition : ScriptableObject
     [Min(0f)] public float AttackMultiplier = 1f;
     [Tooltip("몬스터 처치 시 플레이어에게 지급할 기본 골드입니다.")]
     [Min(0)] public int DropGold;
-    [Tooltip("몬스터가 보유할 능력 에셋 목록입니다. 실제 효과 처리는 추후 연결합니다.")]
+    [Header("몬스터 특성")]
+    [Tooltip("몬스터 아이콘 호버 시 특성 설명을 함께 표시할 특성 에셋 목록입니다.")]
     public List<MonsterAbilityDefinition> Abilities = new();
+
+    // 몬스터 호버 UI가 이름·설명·특성을 한 번에 표시할 때 사용할 텍스트를 만듭니다.
+    public string GetTooltipText()
+    {
+        string _tooltipText = string.IsNullOrWhiteSpace(Description) ? MonsterName : $"{MonsterName}\n\n{Description}";
+        if (Abilities == null || Abilities.Count == 0) return _tooltipText;
+
+        _tooltipText += "\n\n[특성]";
+        foreach (MonsterAbilityDefinition _ability in Abilities)
+        {
+            if (_ability == null) continue;
+            _tooltipText += $"\n\n{_ability.GetTooltipText()}";
+        }
+
+        return _tooltipText;
+    }
 }

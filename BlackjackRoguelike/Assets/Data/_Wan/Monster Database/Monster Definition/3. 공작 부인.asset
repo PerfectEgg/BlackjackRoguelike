@@ -10,10 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43b7d48707e3dc04982b680184709af0, type: 3}
-  m_Name: 3
+  m_Name: "3. \uACF5\uC791 \uBD80\uC778"
   m_EditorClassIdentifier: Assembly-CSharp::MonsterDefinition
   StageNumber: 3
   MonsterName: "\uACF5\uC791 \uBD80\uC778"
+  Description: "\uD6C4\uCD94 \uC5F0\uAE30\uAC00 \uAC00\uB4DD\uD55C \uC9D1 \uC548\uC5D0\uC11C
+    \uB09C\uD3ED\uD558\uAC8C \uC544\uAE30 \uB3FC\uC9C0\uB97C \uB3CC\uBCF4\uB2E4\uAC00
+    \uC568\uB9AC\uC2A4\uC5D0\uAC8C \uB118\uAE40"
   Icon: {fileID: 0}
   MaxHp: 100
   AttackMultiplier: 1
