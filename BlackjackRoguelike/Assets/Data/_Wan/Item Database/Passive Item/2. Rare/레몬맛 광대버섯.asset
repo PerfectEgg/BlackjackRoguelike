@@ -19,9 +19,11 @@ MonoBehaviour:
   ItemType: 0
   Rarity: 1
   Effects:
-  - Category: 7
+  - Category: 8
     Operation: 1
     Trigger: 0
+    Target: 1
+    ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
