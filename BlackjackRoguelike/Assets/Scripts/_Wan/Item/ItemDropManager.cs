@@ -4,9 +4,9 @@ using System.Collections.Generic;
 /// <summary>등급 확률과 중복 규칙에 따라 스테이지 아이템 보상을 생성합니다.</summary>
 public class ItemDropManager
 {
-    private const int CommonWeight = 50;
+    private const int CommonWeight = 40;
     private const int RareWeight = 35;
-    private const int LegendaryWeight = 15;
+    private const int LegendaryWeight = 25;
 
     private readonly Random _random;
 
@@ -80,7 +80,7 @@ public class ItemDropManager
         return _candidates;
     }
 
-    // 사용 가능한 등급만 대상으로 일반 50%, 희귀 35%, 전설 15% 비율을 유지해 등급을 뽑습니다.
+    // 사용 가능한 등급만 대상으로 일반 40%, 희귀 35%, 전설 25% 비율을 유지해 등급을 뽑습니다.
     private ItemRarity RollRarity(List<ItemRarity> availableRarities)
     {
         int _totalWeight = 0;
