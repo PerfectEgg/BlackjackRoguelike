@@ -26,13 +26,14 @@ public class MonsterAbilityDefinition : ScriptableObject
 // 몬스터가 스테이지 전투에서 사용할 수 있는 고유 기믹 종류입니다.
 public enum MonsterAbilityType
 {
-    None,
-    HideNextDealerCard,
-    RemoveLastDealerCardOnBust,
-    DeclareRankPermanentAttack,
-    DeclareRankHeal,
-    CardColorBonus,
-    DealerScoreAdjustment,
-    HeartExecution,
-    ForceBlackJackAndBlackJackBonus
+    None = 0,
+    HideNextDealerCard = 1,
+    SameSuitPairRoundAttack = 9,
+    RemoveLastDealerCardOnBust = 2,
+    DeclareRankPermanentAttack = 3,
+    DeclareRankHeal = 4,
+    CardColorBonus = 5,
+    DealerScoreAdjustment = 6,
+    HeartExecution = 7,
+    ForceBlackJackAndBlackJackBonus = 8
 }

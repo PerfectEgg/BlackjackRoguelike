@@ -10,20 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
-  m_Name: "\uC5C9\uD130\uB9AC \uB450\uB8E8\uB9C8\uB9AC"
+  m_Name: "\uCE60\uBA74\uC870 \uAD6C\uC774"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  ItemName: "\uC5C9\uD130\uB9AC \uB450\uB8E8\uB9C8\uB9AC"
-  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
-  Description: "3\uD134 \uB3D9\uC548 \uD50C\uB808\uC774\uC5B4 \uACF5\uACA9\uB825
-    \uACC4\uC218 -0.5, \uB2E8 \uC0C1\uB300\uB3C4 \uACF5\uACA9\uB825 \uACC4\uC218
-    x0.5\uB85C \uAC10\uC18C"
-  ItemType: 1
-  Rarity: 1
+  ItemName: "\uCE60\uBA74\uC870 \uAD6C\uC774"
+  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  Description: "\uACF5\uACA9\uB825 \uACC4\uC218 -0.1, \uACF5\uACA9 \uC2DC \uD53C\uD574\uB7C9\uC758
+    25% \uD68C\uBCF5"
+  ItemType: 0
+  Rarity: 0
   Effects:
   - Category: 1
     Operation: 1
-    Trigger: 7
-    Target: 1
+    Trigger: 0
+    Target: 0
     ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
@@ -34,11 +33,11 @@ MonoBehaviour:
     RequiredCardSuit: 0
     RequiredCardCount: 0
     IntValue: 0
-    FloatValue: -0.5
+    FloatValue: -0.1
     ValueSource: 0
     SecondaryFloatValue: 0
-    DurationScope: 2
-    Duration: 3
+    DurationScope: 1
+    Duration: 0
     CardManipulationScope: 0
     CardManipulationMode: 0
     CardManipulationCount: 0
@@ -49,10 +48,10 @@ MonoBehaviour:
     DrawMode: 0
     DrawCardRank: 0
     DrawCardSuit: 0
-  - Category: 1
-    Operation: 2
-    Trigger: 7
-    Target: 2
+  - Category: 4
+    Operation: 1
+    Trigger: 6
+    Target: 0
     ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
@@ -63,11 +62,11 @@ MonoBehaviour:
     RequiredCardSuit: 0
     RequiredCardCount: 0
     IntValue: 0
-    FloatValue: 0.5
+    FloatValue: 0.25
     ValueSource: 0
     SecondaryFloatValue: 0
-    DurationScope: 2
-    Duration: 3
+    DurationScope: 1
+    Duration: 0
     CardManipulationScope: 0
     CardManipulationMode: 0
     CardManipulationCount: 0

@@ -14,14 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "\uB808\uBAAC\uB9DB \uC591\uD314 \uC800\uC6B8"
   Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  Description: "\uBB34\uC2B9\uBD80 \uC2DC \uACF5\uACA9\uB825 \uACC4\uC218\uC758 \uC808\uBC18\uC758
-    \uD53C\uD574"
+  Description: "\uBB34\uC2B9\uBD80 \uC2DC \uACF5\uACA9\uB825 \uACC4\uC218 x1.5 \uB9CC\uD07C
+    \uD68C\uBCF5"
   ItemType: 0
   Rarity: 1
   Effects:
-  - Category: 11
-    Operation: 2
+  - Category: 3
+    Operation: 1
     Trigger: 4
+    Target: 1
+    ActiveAction: 0
     Condition: 3
     ConditionTarget: 0
     ConditionValue: 0
@@ -31,11 +33,11 @@ MonoBehaviour:
     RequiredCardSuit: 0
     RequiredCardCount: 0
     IntValue: 0
-    FloatValue: 0.5
-    ValueSource: 0
+    FloatValue: 1.5
+    ValueSource: 9
     SecondaryFloatValue: 0
-    DurationScope: 2
-    Duration: 1
+    DurationScope: 1
+    Duration: 0
     CardManipulationScope: 0
     CardManipulationMode: 0
     CardManipulationCount: 0

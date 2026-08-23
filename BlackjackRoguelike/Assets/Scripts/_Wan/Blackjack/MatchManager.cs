@@ -386,21 +386,23 @@ public sealed class MatchManager
     // 현재 목표 점수를 향해 보정 범위만큼 플레이어 점수를 올리거나 내립니다.
     private int GetAdjustedPlayerScore()
     {
-        int _rawScore = PlayerHand.Score;
-        int _differenceToTarget = _rules.TargetScore - _rawScore;
-        if (_differenceToTarget > 0) return _rawScore + Math.Min(_playerScoreAdjustmentRange, _differenceToTarget);
-        if (_differenceToTarget < 0) return _rawScore - Math.Min(_playerScoreAdjustmentRange, -_differenceToTarget);
-        return _rawScore;
+        return GetTargetAdjustedScore(PlayerHand.Score, _playerScoreAdjustmentRange);
     }
 
     // 몬스터 점수를 목표 점수 방향으로 지정한 범위만큼 보정합니다.
     private int GetAdjustedDealerScore()
     {
-        int _rawScore = DealerHand.Score;
-        int _differenceToTarget = _rules.TargetScore - _rawScore;
-        if (_differenceToTarget > 0) return _rawScore + Math.Min(_dealerScoreAdjustmentRange, _differenceToTarget);
-        if (_differenceToTarget < 0) return _rawScore - Math.Min(_dealerScoreAdjustmentRange, -_differenceToTarget);
-        return _rawScore;
+        return GetTargetAdjustedScore(DealerHand.Score, _dealerScoreAdjustmentRange);
+    }
+
+    // 플레이어·몬스터 모두 현재 점수를 목표 점수 방향으로만 보정합니다.
+    private int GetTargetAdjustedScore(int rawScore, int adjustmentRange)
+    {
+        if (adjustmentRange <= 0 || rawScore == _rules.TargetScore) return rawScore;
+
+        return rawScore < _rules.TargetScore
+            ? Math.Min(_rules.TargetScore, rawScore + adjustmentRange)
+            : Math.Max(_rules.TargetScore, rawScore - adjustmentRange);
     }
 
     // 현재 상태를 갱신하고 상태 변경 이벤트를 호출합니다.

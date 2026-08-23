@@ -163,7 +163,9 @@ public enum ItemEffectValueSource
     [InspectorName("이번 라운드 체력 배팅값")]
     CurrentRoundHpBet,
     [InspectorName("이번 공격의 실제 피해량")]
-    DealtDamage
+    DealtDamage,
+    [InspectorName("현재 플레이어 점수 × 공격력 계수")]
+    PlayerScoreWithAttackMultiplier
 }
 
 // 효과가 유지될 범위입니다. None은 즉시 처리하거나 범위가 필요 없는 효과에 사용합니다.

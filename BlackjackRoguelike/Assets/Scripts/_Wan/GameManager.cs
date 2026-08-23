@@ -403,7 +403,9 @@ public sealed class GameManager
         if (matchResult.Outcome == MatchOutcome.Draw)
         {
             int _drawDamage = _itemEffectProcessor.CalculateDrawDirectDamage(Player, ItemInventory, matchResult);
+            int _drawHealAmount = _itemEffectProcessor.CalculateDrawHealAmount(Player, ItemInventory, matchResult);
             ApplyDirectDamageToMonster(_drawDamage);
+            if (_drawHealAmount > 0) Player.Heal(_drawHealAmount);
             ApplyActiveMatchEndHealEffects();
             return;
         }

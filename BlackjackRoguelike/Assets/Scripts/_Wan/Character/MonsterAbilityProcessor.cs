@@ -8,12 +8,15 @@ public sealed class MonsterAbilityProcessor
     private readonly List<MonsterAbilityRuntimeState> _abilityStates = new();
     private float _permanentAttackBonus;
     private float _roundAttackBonus;
+    private float _sameSuitPairRoundAttackBonus;
     private float _roundAttackMultiplier = 1f;
     private float _baseAttackMultiplier;
     private int _hiddenDealerCardIndex = -1;
 
-    // 이번 라운드에 선언된 첫 숫자를 외부 UI가 표시할 때 사용합니다.
+    // 이번 라운드에 선언된 숫자 목록을 외부 UI가 표시할 때 사용합니다.
     public CardRank DeclaredRank { get; private set; }
+    public IReadOnlyList<CardRank> DeclaredRanks => _declaredRanks;
+    private readonly List<CardRank> _declaredRanks = new();
     // 이번 라운드에 숨겨진 몬스터 카드가 있는지 나타냅니다.
     public bool HasHiddenDealerCard => _hiddenDealerCardIndex >= 0;
 
@@ -23,10 +26,12 @@ public sealed class MonsterAbilityProcessor
         _abilityStates.Clear();
         _permanentAttackBonus = 0f;
         _roundAttackBonus = 0f;
+        _sameSuitPairRoundAttackBonus = 0f;
         _roundAttackMultiplier = 1f;
         _baseAttackMultiplier = monster?.AttackMultiplier ?? 0f;
         _hiddenDealerCardIndex = -1;
         DeclaredRank = CardRank.None;
+        _declaredRanks.Clear();
 
         if (monster?.Definition?.Abilities == null) return;
         foreach (MonsterAbilityDefinition _ability in monster.Definition.Abilities)
@@ -42,10 +47,13 @@ public sealed class MonsterAbilityProcessor
 
         _baseAttackMultiplier = monster.AttackMultiplier;
         _roundAttackBonus = 0f;
+        _sameSuitPairRoundAttackBonus = 0f;
         _roundAttackMultiplier = 1f;
         _hiddenDealerCardIndex = -1;
         DeclaredRank = CardRank.None;
+        _declaredRanks.Clear();
         int _dealerScoreAdjustmentRange = 0;
+        HashSet<CardRank> _usedDeclaredRanks = new();
         foreach (MonsterAbilityRuntimeState _state in _abilityStates)
         {
             _state.UsedThisRound = false;
@@ -54,11 +62,10 @@ public sealed class MonsterAbilityProcessor
             {
                 case MonsterAbilityType.DeclareRankPermanentAttack:
                 case MonsterAbilityType.DeclareRankHeal:
-                    _state.DeclaredRank = GetRandomNumberRank();
-                    if (DeclaredRank == CardRank.None) DeclaredRank = _state.DeclaredRank;
+                    DeclareUniqueNumberRanks(_state, _usedDeclaredRanks, 2);
                     break;
                 case MonsterAbilityType.DealerScoreAdjustment:
-                    _dealerScoreAdjustmentRange = Math.Max(_dealerScoreAdjustmentRange, GetIntValueOrDefault(_ability, 1));
+                    _dealerScoreAdjustmentRange = Math.Max(_dealerScoreAdjustmentRange, Math.Abs(GetIntValueOrDefault(_ability, 1)));
                     break;
                 case MonsterAbilityType.ForceBlackJackAndBlackJackBonus:
                     QueueBlackJack(match);
@@ -91,12 +98,12 @@ public sealed class MonsterAbilityProcessor
             MonsterAbilityDefinition _ability = _state.Definition;
             switch (_ability.AbilityType)
             {
-                case MonsterAbilityType.DeclareRankPermanentAttack when !_state.UsedThisRound && card.Rank == _state.DeclaredRank:
+                case MonsterAbilityType.DeclareRankPermanentAttack when !_state.UsedThisRound && _state.DeclaredRanks.Contains(card.Rank):
                     _permanentAttackBonus += card.BaseValue * GetFloatValueOrDefault(_ability, 0.05f);
                     _state.UsedThisRound = true;
                     SyncAttackMultiplier(monster);
                     break;
-                case MonsterAbilityType.DeclareRankHeal when !_state.UsedThisRound && card.Rank == _state.DeclaredRank:
+                case MonsterAbilityType.DeclareRankHeal when !_state.UsedThisRound && _state.DeclaredRanks.Contains(card.Rank):
                     monster.Heal(card.BaseValue * GetIntValueOrDefault(_ability, 1));
                     _state.UsedThisRound = true;
                     break;
@@ -122,6 +129,7 @@ public sealed class MonsterAbilityProcessor
         }
 
         UpdateBlackJackAttackMultiplier(match.DealerHand, monster);
+        UpdateSameSuitPairAttackBonus(match.DealerHand, monster);
     }
 
     // 현재 라운드에 숨겨진 몬스터 카드의 UI 인덱스인지 확인합니다.
@@ -213,7 +221,47 @@ public sealed class MonsterAbilityProcessor
     private void SyncAttackMultiplier(Monster monster)
     {
         if (monster == null) return;
-        monster.SetAttackMultiplier((_baseAttackMultiplier + _permanentAttackBonus + _roundAttackBonus) * _roundAttackMultiplier);
+        monster.SetAttackMultiplier((_baseAttackMultiplier + _permanentAttackBonus + _roundAttackBonus + _sameSuitPairRoundAttackBonus) * _roundAttackMultiplier);
+    }
+
+    // 딜러 패에 같은 무늬 카드가 두 장 이상 있으면 이번 라운드 공격력 계수 보너스를 적용합니다.
+    private void UpdateSameSuitPairAttackBonus(BlackjackHand dealerHand, Monster monster)
+    {
+        foreach (MonsterAbilityRuntimeState _state in _abilityStates)
+        {
+            if (_state.Definition.AbilityType != MonsterAbilityType.SameSuitPairRoundAttack) continue;
+
+            Dictionary<CardSuit, int> _suitCounts = new();
+            foreach (Card _card in dealerHand.Cards)
+            {
+                if (_card.Suit == CardSuit.None) continue;
+                _suitCounts.TryGetValue(_card.Suit, out int _count);
+                _suitCounts[_card.Suit] = _count + 1;
+            }
+
+            foreach (int _count in _suitCounts.Values)
+            {
+                if (_count < 2) continue;
+                _sameSuitPairRoundAttackBonus = GetFloatValueOrDefault(_state.Definition, 0.5f);
+                SyncAttackMultiplier(monster);
+                return;
+            }
+        }
+    }
+
+    // 선언 능력마다 숫자 두 개를 뽑되, 같은 라운드의 다른 선언과도 겹치지 않게 기록합니다.
+    private void DeclareUniqueNumberRanks(MonsterAbilityRuntimeState state, ISet<CardRank> usedRanks, int count)
+    {
+        state.DeclaredRanks.Clear();
+        while (state.DeclaredRanks.Count < count && usedRanks.Count < (int)CardRank.Ten - (int)CardRank.Two + 1)
+        {
+            CardRank _rank = GetRandomNumberRank();
+            if (!usedRanks.Add(_rank)) continue;
+
+            state.DeclaredRanks.Add(_rank);
+            _declaredRanks.Add(_rank);
+            if (DeclaredRank == CardRank.None) DeclaredRank = _rank;
+        }
     }
 
     // 검은 J 강제 능력이 있으면 다음 딜러 드로우를 클럽 또는 스페이드 J로 예약합니다.
@@ -263,7 +311,7 @@ public sealed class MonsterAbilityProcessor
     private sealed class MonsterAbilityRuntimeState
     {
         public MonsterAbilityDefinition Definition { get; }
-        public CardRank DeclaredRank { get; set; }
+        public List<CardRank> DeclaredRanks { get; } = new();
         public bool UsedThisRound { get; set; }
 
         public MonsterAbilityRuntimeState(MonsterAbilityDefinition definition)

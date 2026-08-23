@@ -118,6 +118,7 @@ public sealed class ItemEffectProcessor
     private float _currentRoundAttackBonus;
     private readonly List<ActiveAttackRuntimeEffect> _activeAttackEffects = new();
     private readonly List<ItemEffectData> _activeStageBlackjackAttackEffects = new();
+    private bool _hasAppliedStageBlackjackAttackThisRound;
     private readonly List<ActiveLifeStealRuntimeEffect> _activeLifeStealEffects = new();
     private readonly List<ActiveMatchEndHealRuntimeEffect> _activeMatchEndHealEffects = new();
 
@@ -315,6 +316,25 @@ public sealed class ItemEffectProcessor
         return Math.Max(0, _damage);
     }
 
+    // 무승부 시 현재 플레이어 점수와 공격력 계수를 기준으로 발동하는 패시브 회복량을 계산합니다.
+    public int CalculateDrawHealAmount(Player player, ItemInventory inventory, MatchResult matchResult)
+    {
+        if (player == null || inventory == null) return 0;
+
+        int _healAmount = 0;
+        foreach (ItemInstance _item in inventory.PassiveItems)
+        {
+            if (_item.Definition == null) continue;
+            foreach (ItemEffectData _effect in _item.Definition.Effects)
+            {
+                if (!IsDrawHealEffect(_effect)) continue;
+                _healAmount += Mathf.FloorToInt(matchResult.PlayerScore * player.AttackMultiplier * _effect.FloatValue * Math.Max(1, _item.StackCount));
+            }
+        }
+
+        return Math.Max(0, _healAmount);
+    }
+
     // 몬스터 버스트 승리 시 플레이어를 블랙잭으로 간주하는 패시브가 있으면 결과를 블랙잭 승리로 변환합니다.
     public MatchResult ApplyMonsterBustBlackjackConversion(ItemInventory inventory, MatchResult matchResult, int targetScore)
     {
@@ -361,6 +381,7 @@ public sealed class ItemEffectProcessor
     // 새 라운드를 시작하며 현재 라운드를 모두 소진한 액티브 공격력 효과를 제거합니다.
     public void BeginRound(Player player, ItemInventory inventory, BlackjackHand playerHand, int playerGold)
     {
+        _hasAppliedStageBlackjackAttackThisRound = false;
         _currentRoundAttackBonus = _nextRoundAttackBonus;
         _nextRoundAttackBonus = 0f;
         AdvanceActiveAttackEffectDurations();
@@ -1026,7 +1047,7 @@ public sealed class ItemEffectProcessor
     // 이번 스테이지에 예약된 블랙잭 공격력 보너스를 블랙잭 승리 결과에만 적용합니다.
     private void ApplyActiveStageBlackjackAttackEffects(BlackjackHand playerHand, int playerGold, MatchResult? matchResult, ref float attackMultiplier)
     {
-        if (!matchResult.HasValue || matchResult.Value.Outcome != MatchOutcome.PlayerWin || !matchResult.Value.PlayerBlackjack) return;
+        if (_hasAppliedStageBlackjackAttackThisRound || !matchResult.HasValue || matchResult.Value.Outcome != MatchOutcome.PlayerWin || !matchResult.Value.PlayerBlackjack) return;
 
         foreach (ItemEffectData _effect in _activeStageBlackjackAttackEffects)
         {
@@ -1044,6 +1065,8 @@ public sealed class ItemEffectProcessor
                     break;
             }
         }
+
+        _hasAppliedStageBlackjackAttackThisRound = true;
     }
 
     // 라운드가 끝난 효과는 제거하고 남은 효과는 다음 라운드 횟수를 하나 차감합니다.
@@ -1491,6 +1514,18 @@ public sealed class ItemEffectProcessor
                effect.Operation == ItemEffectOperation.Multiply &&
                effect.Trigger == ItemTrigger.OnMatchEnd &&
                effect.Condition == ItemConditionType.Draw;
+    }
+
+    // 무승부 시 플레이어 점수와 공격력 계수에 비례해 회복하는 패시브인지 확인합니다.
+    private bool IsDrawHealEffect(ItemEffectData effect)
+    {
+        return effect != null &&
+               effect.Category == ItemEffectCategory.Heal &&
+               effect.Operation == ItemEffectOperation.Add &&
+               effect.Trigger == ItemTrigger.OnMatchEnd &&
+               effect.Condition == ItemConditionType.Draw &&
+               effect.ValueSource == ItemEffectValueSource.PlayerScoreWithAttackMultiplier &&
+               (effect.Target == ItemEffectTarget.None || effect.Target == ItemEffectTarget.Player);
     }
 
     // 매 라운드 시작 시 조건 없이 적용되는 체력 회복 효과인지 확인합니다.

@@ -18,7 +18,7 @@ MonoBehaviour:
     \uC7A5\uBBF8\uB85C \uCE60\uD558\uACE0 \uC788\uC74C"
   Icon: {fileID: 0}
   MaxHp: 300
-  AttackMultiplier: 2
+  AttackMultiplier: 1.75
   DropGold: 350
   Abilities:
   - {fileID: 11400000, guid: 6e25f280b2cdd73478d5f87682f4d9ce, type: 2}
