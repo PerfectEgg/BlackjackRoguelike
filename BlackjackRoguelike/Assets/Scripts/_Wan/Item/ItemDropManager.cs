@@ -4,9 +4,9 @@ using System.Collections.Generic;
 /// <summary>등급 확률과 중복 규칙에 따라 스테이지 아이템 보상을 생성합니다.</summary>
 public class ItemDropManager
 {
-    private const int CommonWeight = 40;
+    private const int CommonWeight = 45;
     private const int RareWeight = 35;
-    private const int LegendaryWeight = 25;
+    private const int LegendaryWeight = 20;
 
     private readonly Random _random;
 
