@@ -22,7 +22,7 @@ MonoBehaviour:
     Operation: 0
     Trigger: 7
     Target: 0
-    ActiveAction: 4
+    ActiveAction: 5
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
