@@ -14,13 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "\uB808\uBAAC\uB9DB \uD0C0\uB974\uD2B8"
   Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  Description: "\uCD5C\uB300 \uCCB4\uB825 +200"
+  Description: "\uCD5C\uB300 \uCCB4\uB825 +100"
   ItemType: 0
   Rarity: 1
   Effects:
   - Category: 2
     Operation: 1
     Trigger: 0
+    Target: 0
+    ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
@@ -29,7 +31,7 @@ MonoBehaviour:
     RequiredCardRank: 0
     RequiredCardSuit: 0
     RequiredCardCount: 0
-    IntValue: 200
+    IntValue: 100
     FloatValue: 0
     ValueSource: 0
     SecondaryFloatValue: 0

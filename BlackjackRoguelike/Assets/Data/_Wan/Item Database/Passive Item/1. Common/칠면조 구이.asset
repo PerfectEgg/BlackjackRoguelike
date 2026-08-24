@@ -15,7 +15,7 @@ MonoBehaviour:
   ItemName: "\uCE60\uBA74\uC870 \uAD6C\uC774"
   Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   Description: "\uACF5\uACA9\uB825 \uACC4\uC218 -0.1, \uACF5\uACA9 \uC2DC \uD53C\uD574\uB7C9\uC758
-    25% \uD68C\uBCF5"
+    20% \uD68C\uBCF5"
   ItemType: 0
   Rarity: 0
   Effects:
@@ -62,7 +62,7 @@ MonoBehaviour:
     RequiredCardSuit: 0
     RequiredCardCount: 0
     IntValue: 0
-    FloatValue: 0.25
+    FloatValue: 0.2
     ValueSource: 0
     SecondaryFloatValue: 0
     DurationScope: 1

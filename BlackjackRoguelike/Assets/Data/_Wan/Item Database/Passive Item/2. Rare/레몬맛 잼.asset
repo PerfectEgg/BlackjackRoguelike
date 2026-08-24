@@ -15,13 +15,15 @@ MonoBehaviour:
   ItemName: "\uB808\uBAAC\uB9DB \uC7BC"
   Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   Description: "\uB9E4 \uB77C\uC6B4\uB4DC \uC2DC\uC791 \uC2DC \uCCB4\uB825 \uD68C\uBCF5
-    +30"
+    +15"
   ItemType: 0
   Rarity: 1
   Effects:
   - Category: 3
     Operation: 1
     Trigger: 1
+    Target: 0
+    ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
@@ -30,7 +32,7 @@ MonoBehaviour:
     RequiredCardRank: 0
     RequiredCardSuit: 0
     RequiredCardCount: 0
-    IntValue: 30
+    IntValue: 15
     FloatValue: 0
     ValueSource: 0
     SecondaryFloatValue: 0
