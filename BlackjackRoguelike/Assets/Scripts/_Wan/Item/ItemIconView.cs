@@ -12,15 +12,18 @@ public sealed class ItemIconView : MonoBehaviour, IPointerEnterHandler, IPointer
     [SerializeField] private TMP_Text _footerText;
     [SerializeField] private GameObject _usedIndicator;
     [SerializeField] private GameObject _selectedIndicator;
+    [Range(0f, 1f)] [SerializeField] private float _completedItemAlpha = 0.45f;
 
     private ItemDefinition _itemDefinition;
     private ItemDescriptionView _itemDescriptionView;
     private UnityAction _clickAction;
+    private CanvasGroup _canvasGroup;
 
     // 버튼이 연결돼 있으면 아이콘 클릭을 외부에서 전달한 동작으로 처리합니다.
     private void Awake()
     {
         if (_button != null) _button.onClick.AddListener(HandleClick);
+        ConfigureDisabledButtonColor();
     }
 
     // 아이콘 제거 시 등록한 클릭 콜백을 해제합니다.
@@ -65,6 +68,30 @@ public sealed class ItemIconView : MonoBehaviour, IPointerEnterHandler, IPointer
     public void SetSelected(bool isSelected)
     {
         if (_selectedIndicator != null) _selectedIndicator.SetActive(isSelected);
+        SetCompletedAppearance(isSelected);
+    }
+
+    // 상점에서 구매 완료된 상품만 반투명하게 표시합니다.
+    public void SetPurchased(bool isPurchased)
+    {
+        SetCompletedAppearance(isPurchased);
+    }
+
+    // 선택 완료·구매 완료 항목의 투명도만 높이고, 클릭 불가 항목은 원래 밝기를 유지합니다.
+    private void SetCompletedAppearance(bool isCompleted)
+    {
+        if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
+        if (_canvasGroup == null) _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        _canvasGroup.alpha = isCompleted ? _completedItemAlpha : 1f;
+    }
+
+    // 골드 부족·선택 한도처럼 클릭만 막힌 항목은 Button 비활성 색으로 흐려지지 않게 합니다.
+    private void ConfigureDisabledButtonColor()
+    {
+        if (_button == null) return;
+        ColorBlock _colors = _button.colors;
+        _colors.disabledColor = _colors.normalColor;
+        _button.colors = _colors;
     }
 
     // 아이콘에 마우스를 올리면 공용 설명 프리팹을 표시합니다.

@@ -6,6 +6,10 @@ public sealed class ItemDescriptionView : MonoBehaviour
 {
     [SerializeField] private TMP_Text _detailText;
     [SerializeField] private Vector2 _cursorOffset = new(18f, -18f);
+    [Header("등급별 이름 색상")]
+    [SerializeField] private Color _commonNameColor = new(0.38f, 0.72f, 1f);
+    [SerializeField] private Color _rareNameColor = new(1f, 0.85f, 0.35f);
+    [SerializeField] private Color _legendaryNameColor = new(1f, 0.38f, 0.38f);
 
     private Canvas _targetCanvas;
     private RectTransform _canvasRect;
@@ -31,7 +35,8 @@ public sealed class ItemDescriptionView : MonoBehaviour
         _canvasRect = _targetCanvas.transform as RectTransform;
         if (_detailText != null)
         {
-            _detailText.text = $"{itemDefinition.ItemName} [{GetRarityName(itemDefinition.Rarity)}]\n\n{itemDefinition.Description}";
+            string _colorCode = ColorUtility.ToHtmlStringRGB(GetRarityNameColor(itemDefinition.Rarity));
+            _detailText.text = $"<color=#{_colorCode}>{itemDefinition.ItemName}</color> [{GetRarityName(itemDefinition.Rarity)}]\n\n{itemDefinition.Description}";
         }
 
         // 설명 루트와 현재 설명을 마지막 형제로 보내 다른 패널보다 위에 표시합니다.
@@ -77,6 +82,18 @@ public sealed class ItemDescriptionView : MonoBehaviour
             ItemRarity.Rare => "희귀",
             ItemRarity.Legendary => "전설",
             _ => "없음"
+        };
+    }
+
+    // 아이템 이름에 적용할 등급별 밝은 색상을 반환합니다.
+    private Color GetRarityNameColor(ItemRarity rarity)
+    {
+        return rarity switch
+        {
+            ItemRarity.Common => _commonNameColor,
+            ItemRarity.Rare => _rareNameColor,
+            ItemRarity.Legendary => _legendaryNameColor,
+            _ => Color.white
         };
     }
 }

@@ -67,7 +67,13 @@ public sealed class BlackjackSystem : MonoBehaviour
 
     [Header("보상 UI")]
     [SerializeField] private GameObject _rewardPanel;
+    [Tooltip("패시브 보상 아이콘을 넣을 슬롯입니다. 후보 순서대로 연결합니다.")]
+    [SerializeField] private Transform[] _passiveRewardSlots;
+    [Tooltip("액티브 보상 아이콘을 넣을 슬롯입니다. 후보 순서대로 연결합니다.")]
+    [SerializeField] private Transform[] _activeRewardSlots;
+    [Tooltip("보상 슬롯을 아직 연결하지 않았을 때만 사용하는 이전 방식의 직접 생성 컨테이너입니다.")]
     [SerializeField] private GameObject _passiveRewardContent;
+    [Tooltip("보상 슬롯을 아직 연결하지 않았을 때만 사용하는 이전 방식의 직접 생성 컨테이너입니다.")]
     [SerializeField] private GameObject _activeRewardContent;
     [SerializeField] private Button _rewardConfirmButton;
 
@@ -228,26 +234,37 @@ public sealed class BlackjackSystem : MonoBehaviour
         _pendingReward = itemDrops;
         _selectedPassiveRewardIndexes.Clear();
         _selectedActiveRewardIndexes.Clear();
-        RebuildRewardItems(ItemType.Passive, itemDrops.PassiveCandidates, _passiveRewardContent, _passiveRewardViews);
-        RebuildRewardItems(ItemType.Active, itemDrops.ActiveCandidates, _activeRewardContent, _activeRewardViews);
+        RebuildRewardItems(ItemType.Passive, itemDrops.PassiveCandidates, _passiveRewardSlots, _passiveRewardContent, _passiveRewardViews);
+        RebuildRewardItems(ItemType.Active, itemDrops.ActiveCandidates, _activeRewardSlots, _activeRewardContent, _activeRewardViews);
         UpdateRewardSelectionUi(ItemType.Passive);
         UpdateRewardSelectionUi(ItemType.Active);
         UpdateRewardConfirmButton();
         if (_rewardPanel != null) _rewardPanel.SetActive(true);
     }
 
-    // 보상 후보를 공용 아이콘 프리팹으로 생성하고 각 아이콘에 선택 동작을 연결합니다.
-    private void RebuildRewardItems(ItemType itemType, IReadOnlyList<ItemDefinition> candidates, GameObject content, List<ItemIconView> views)
+    // 보상 후보를 지정한 슬롯 안에 생성하고 각 아이콘에 선택 동작을 연결합니다.
+    private void RebuildRewardItems(ItemType itemType, IReadOnlyList<ItemDefinition> candidates, Transform[] rewardSlots, GameObject fallbackContent, List<ItemIconView> views)
     {
         ClearItemIconViews(views);
-        if (content == null) return;
+        if (candidates == null) return;
 
         for (int _index = 0; _index < candidates.Count; _index++)
         {
             int _candidateIndex = _index;
-            ItemIconView _view = CreateItemIcon(candidates[_index], content.transform, false, () => TrySelectReward(itemType, _candidateIndex));
+            Transform _parent = GetRewardItemParent(_index, rewardSlots, fallbackContent);
+            ItemIconView _view = CreateItemIcon(candidates[_index], _parent, false, () => TrySelectReward(itemType, _candidateIndex));
             if (_view != null) views.Add(_view);
         }
+    }
+
+    // 후보 순서와 같은 슬롯을 우선 사용하고, 슬롯이 없을 때만 기존 컨테이너를 사용합니다.
+    private Transform GetRewardItemParent(int index, Transform[] rewardSlots, GameObject fallbackContent)
+    {
+        if (rewardSlots != null && rewardSlots.Length > 0)
+        {
+            return index >= 0 && index < rewardSlots.Length ? rewardSlots[index] : null;
+        }
+        return fallbackContent != null ? fallbackContent.transform : null;
     }
 
     // 보상 후보 선택을 토글합니다. 선택한 아이콘을 다시 누르면 선택이 해제됩니다.
@@ -340,6 +357,7 @@ public sealed class BlackjackSystem : MonoBehaviour
                 ItemIconView _view = CreateItemIcon(_offer.Item, _shopOfferContent.transform, false, () => TryBuyShopOffer(_offerIndex), _footerText);
                 if (_view == null) continue;
                 _view.SetInteractable(!_offer.IsSold && (_game.Gold >= _offer.Price || _game.HasFreeShopPurchaseTicket));
+                _view.SetPurchased(_offer.IsSold);
                 _shopOfferViews.Add(_view);
             }
         }

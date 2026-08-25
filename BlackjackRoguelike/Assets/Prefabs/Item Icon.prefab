@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1, y: 1}
+  m_SizeDelta: {x: 95, y: 95}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8620080533384774778
 MonoBehaviour:
@@ -129,6 +129,8 @@ MonoBehaviour:
   _button: {fileID: 3059276433879668222}
   _footerText: {fileID: 0}
   _usedIndicator: {fileID: 0}
+  _selectedIndicator: {fileID: 0}
+  _completedItemAlpha: 0.25
 --- !u!222 &7175127214766574090
 CanvasRenderer:
   m_ObjectHideFlags: 0
