@@ -23,20 +23,30 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private TMP_Text _goldText;
     [SerializeField] private TMP_Text _dealerNameText;
     [SerializeField] private TMP_Text _dealerHpText;
+    [SerializeField] private Image _dealerHpBarFillImage;
     [SerializeField] private TMP_Text _dealerAttackMultiplierText;
     [SerializeField] private TMP_Text _dealerScoreText;
+    [SerializeField] private TMP_Text _dealerScoreBonusText;
     [SerializeField] private TMP_Text _playerHpText;
+    [SerializeField] private Image _playerHpBarFillImage;
     [SerializeField] private TMP_Text _playerAttackMultiplierText;
     [SerializeField] private GameObject _playerBarrierIndicator;
+    [Range(0f, 1f)] [SerializeField] private float _disabledUiAlpha = 0.35f;
     [SerializeField] private TMP_Text _playerScoreText;
+    [SerializeField] private TMP_Text _playerScoreBonusText;
     [SerializeField] private TMP_Text _hintText;
 
     [Header("카드 UI")]
     [SerializeField] private RectTransform _dealerCardContainer;
     [SerializeField] private RectTransform _playerCardContainer;
-    [SerializeField] private BlackjackCardView _cardTemplate;
-    [SerializeField] private float _cardWidth = 150f;
-    [SerializeField] private float _maximumCardSpacing = 165f;
+    [Header("딜러 카드 UI")]
+    [SerializeField] private BlackjackCardView _dealerCardTemplate;
+    [SerializeField] private float _dealerCardWidth = 110f;
+    [SerializeField] private float _dealerMaximumCardSpacing = 120f;
+    [Header("플레이어 카드 UI")]
+    [SerializeField] private BlackjackCardView _playerCardTemplate;
+    [SerializeField] private float _playerCardWidth = 170f;
+    [SerializeField] private float _playerMaximumCardSpacing = 105f;
 
     [Header("전투 버튼")]
     [SerializeField] private Button _hitButton;
@@ -91,7 +101,8 @@ public sealed class BlackjackSystem : MonoBehaviour
         SubscribeGameEvents();
         BindUiButtons();
 
-        if (_cardTemplate != null && _cardTemplate.gameObject.scene.IsValid()) _cardTemplate.gameObject.SetActive(false);
+        HideCardTemplate(_dealerCardTemplate);
+        HideCardTemplate(_playerCardTemplate);
         if (_inventoryPanel != null) _inventoryPanel.SetActive(false);
         CreateItemDescriptionView();
         if (_rewardPanel != null) _rewardPanel.SetActive(false);
@@ -365,15 +376,17 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_game == null) return;
         RefreshStatusUi();
         bool _hideDealerCards = _game.MonsterAbilities.HasHiddenDealerCard && _game.Match.State is not (MatchState.DealerTurn or MatchState.Finished);
-        RebuildCards(_game.Match.DealerHand, _dealerCardContainer, _dealerCardViews, true, _hideDealerCards);
-        RebuildCards(_game.Match.PlayerHand, _playerCardContainer, _playerCardViews);
+        RebuildCards(_game.Match.DealerHand, _dealerCardContainer, _dealerCardViews, _dealerCardTemplate, _dealerCardWidth, _dealerMaximumCardSpacing, true, _hideDealerCards);
+        RebuildCards(_game.Match.PlayerHand, _playerCardContainer, _playerCardViews, _playerCardTemplate, _playerCardWidth, _playerMaximumCardSpacing);
         if (_dealerScoreText != null)
         {
             _dealerScoreText.text = _hideDealerCards
-                ? $"MONSTER HAND  |  SCORE {_game.MonsterAbilities.GetVisibleDealerScore(_game.Match.DealerHand)} + ? / {_game.Match.TargetScore}"
-                : GetScoreText("MONSTER HAND", _game.Match.DealerHand, _game.Match.DealerScore, _game.Match.TargetScore);
+                ? $"{_game.MonsterAbilities.GetVisibleDealerScore(_game.Match.DealerHand)} + ?"
+                : GetScoreText(_game.Match.DealerHand);
         }
-        if (_playerScoreText != null) _playerScoreText.text = GetScoreText("PLAYER HAND", _game.Match.PlayerHand, _game.Match.PlayerScore, _game.Match.TargetScore, _game.PlayerScoreAdjustmentRange);
+        if (_dealerScoreBonusText != null) _dealerScoreBonusText.text = _hideDealerCards ? string.Empty : GetScoreBonusText(_game.Match.DealerHand.Score, _game.Match.DealerScore);
+        if (_playerScoreText != null) _playerScoreText.text = GetScoreText(_game.Match.PlayerHand);
+        if (_playerScoreBonusText != null) _playerScoreBonusText.text = GetScoreBonusText(_game.Match.PlayerHand.Score, _game.Match.PlayerScore);
 
         bool _isPlayerTurn = _game.Match.IsMatchActive && _game.Match.State == MatchState.PlayerTurn;
         if (_hitButton != null) _hitButton.interactable = _isPlayerTurn;
@@ -381,8 +394,8 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_doubleDownButton != null) _doubleDownButton.interactable = _game.Match.CanDoubleDown;
         if (_handSwapButton != null)
         {
-            _handSwapButton.gameObject.SetActive(_game.HasInitialHandSwapPassive);
             _handSwapButton.interactable = _game.CanSwapInitialHand;
+            SetDisabledAppearance(_handSwapButton.gameObject, _game.CanSwapInitialHand);
         }
         if (_hintText != null) _hintText.text = GetHintText();
     }
@@ -391,15 +404,37 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void RefreshStatusUi()
     {
         if (_game == null) return;
-        if (_stageText != null) _stageText.text = $"STAGE {_game.CurrentStage}";
-        if (_goldText != null) _goldText.text = $"GOLD {_game.Gold}";
+        if (_stageText != null) _stageText.text = $"스테이지 {_game.CurrentStage}";
+        if (_goldText != null) _goldText.text = $"{_game.Gold}";
         if (_dealerNameText != null) _dealerNameText.text = _game.Monster.Name.ToUpperInvariant();
-        if (_dealerHpText != null) _dealerHpText.text = $"HP {_game.Monster.CurrentHp} / {_game.Monster.MaxHp}";
-        if (_dealerAttackMultiplierText != null) _dealerAttackMultiplierText.text = $"ATK x{_game.Monster.AttackMultiplier:0.##}";
-        if (_playerHpText != null) _playerHpText.text = $"HP {_game.Player.CurrentHp} / {_game.Player.MaxHp}";
-        if (_playerAttackMultiplierText != null) _playerAttackMultiplierText.text = $"ATK x{_game.Player.AttackMultiplier:0.##}";
-        if (_playerBarrierIndicator != null) _playerBarrierIndicator.SetActive(_game.Player.HasBarrier);
+        if (_dealerHpText != null) _dealerHpText.text = $"{_game.Monster.CurrentHp} / {_game.Monster.MaxHp}";
+        UpdateHpBar(_dealerHpBarFillImage, _game.Monster.CurrentHp, _game.Monster.MaxHp);
+        if (_dealerAttackMultiplierText != null) _dealerAttackMultiplierText.text = $"x{_game.Monster.AttackMultiplier:0.##}";
+        if (_playerHpText != null) _playerHpText.text = $"{_game.Player.CurrentHp} / {_game.Player.MaxHp}";
+        UpdateHpBar(_playerHpBarFillImage, _game.Player.CurrentHp, _game.Player.MaxHp);
+        if (_playerAttackMultiplierText != null) _playerAttackMultiplierText.text = $"x{_game.Player.AttackMultiplier:0.##}";
+        SetDisabledAppearance(_playerBarrierIndicator, _game.Player.HasBarrier);
         RefreshInventoryUi();
+    }
+
+    // 현재 체력 비율을 UI Image의 Fill Amount로 반영합니다.
+    private void UpdateHpBar(Image hpBarFillImage, int currentHp, int maxHp)
+    {
+        if (hpBarFillImage == null) return;
+        hpBarFillImage.fillAmount = maxHp <= 0 ? 0f : Mathf.Clamp01((float)currentHp / maxHp);
+    }
+
+    // UI를 숨기지 않고, 비활성 상태에는 반투명·비클릭 상태로 표시합니다.
+    private void SetDisabledAppearance(GameObject targetObject, bool isEnabled)
+    {
+        if (targetObject == null) return;
+        if (!targetObject.activeSelf) targetObject.SetActive(true);
+
+        CanvasGroup _canvasGroup = targetObject.GetComponent<CanvasGroup>();
+        if (_canvasGroup == null) _canvasGroup = targetObject.AddComponent<CanvasGroup>();
+        _canvasGroup.alpha = isEnabled ? 1f : _disabledUiAlpha;
+        _canvasGroup.interactable = isEnabled;
+        _canvasGroup.blocksRaycasts = isEnabled;
     }
 
     // 패시브와 액티브 보유 목록을 각각의 텍스트 UI에 표시합니다.
@@ -485,41 +520,58 @@ public sealed class BlackjackSystem : MonoBehaviour
         return _builder.ToString();
     }
 
-    // 에이스가 1점 또는 11점으로 계산되는 현재 상태를 점수 옆에 표시합니다.
-    private string GetScoreText(string handName, BlackjackHand hand, int judgedScore, int targetScore, int adjustmentRange = 0)
+    // 카드 자체가 만든 원점수만 반환합니다. 점수 보정은 별도 Bonus Text에서 표시합니다.
+    private string GetScoreText(BlackjackHand hand)
     {
-        string _aceValue = hand.HasAce ? (hand.IsSoft ? " | A = 11" : " | A = 1") : string.Empty;
-        string _rawScore = hand.Score == judgedScore ? string.Empty : $" | RAW {hand.Score}";
-        string _adjustment = adjustmentRange > 0 ? $" | ADJ ±{adjustmentRange}" : string.Empty;
-        return $"{handName}  |  SCORE {judgedScore} / {targetScore}{_rawScore}{_adjustment}{_aceValue}";
+        return hand == null ? string.Empty : hand.Score.ToString();
     }
 
-    // 카드 컨테이너의 폭에 따라 간격을 줄여 카드가 겹쳐 보이게 배치합니다.
-    private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews, bool isDealer = false, bool hideDealerCards = false)
+    // 원점수와 실제 판정 점수의 차이를 (+1), (-1)처럼 별도 표기합니다.
+    private string GetScoreBonusText(int rawScore, int judgedScore)
     {
-        if (cardContainer == null || _cardTemplate == null) return;
+        int _bonus = judgedScore - rawScore;
+        if (_bonus == 0) return string.Empty;
+        return _bonus > 0 ? $"(+{_bonus})" : $"({_bonus})";
+    }
+
+    // 카드 컨테이너와 진영별 템플릿 설정에 따라 카드 크기와 간격을 배치합니다.
+    private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews, BlackjackCardView cardTemplate, float cardWidth, float maximumCardSpacing, bool isDealer = false, bool hideDealerCards = false)
+    {
+        if (cardContainer == null || cardTemplate == null) return;
         ClearCardViews(cardViews);
         int _count = hand.Cards.Count;
         if (_count == 0) return;
 
-        float _containerWidth = Mathf.Max(_cardWidth, cardContainer.rect.width);
-        float _spacing = _count == 1 ? 0f : Mathf.Min(_maximumCardSpacing, (_containerWidth - _cardWidth) / (_count - 1));
-        float _totalWidth = _cardWidth + _spacing * (_count - 1);
-        float _startX = -_totalWidth * 0.5f + _cardWidth * 0.5f;
+        float _safeCardWidth = Mathf.Max(1f, cardWidth);
+        RectTransform _templateTransform = cardTemplate.GetComponent<RectTransform>();
+        float _aspectRatio = _templateTransform != null && _templateTransform.rect.width > 0f
+            ? _templateTransform.rect.height / _templateTransform.rect.width
+            : 1.4f;
+        float _containerWidth = Mathf.Max(_safeCardWidth, cardContainer.rect.width);
+        float _spacing = _count == 1 ? 0f : Mathf.Min(maximumCardSpacing, (_containerWidth - _safeCardWidth) / (_count - 1));
+        float _totalWidth = _safeCardWidth + _spacing * (_count - 1);
+        float _startX = -_totalWidth * 0.5f + _safeCardWidth * 0.5f;
 
         for (int _index = 0; _index < _count; _index++)
         {
-            BlackjackCardView _cardView = Instantiate(_cardTemplate, cardContainer);
+            BlackjackCardView _cardView = Instantiate(cardTemplate, cardContainer);
             _cardView.gameObject.SetActive(true);
             RectTransform _cardTransform = _cardView.GetComponent<RectTransform>();
             _cardTransform.anchorMin = _cardTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _cardTransform.pivot = new Vector2(0.5f, 0.5f);
+            _cardTransform.sizeDelta = new Vector2(_safeCardWidth, _safeCardWidth * _aspectRatio);
             _cardTransform.anchoredPosition = new Vector2(_startX + _spacing * _index, 0f);
             if (isDealer && hideDealerCards && _game.MonsterAbilities.IsDealerCardHidden(_index)) _cardView.SetHidden();
             else _cardView.SetCard(hand.Cards[_index]);
             _cardView.transform.SetAsLastSibling();
             cardViews.Add(_cardView);
         }
+    }
+
+    // 씬에 놓은 원본 템플릿은 복제 전용으로 숨깁니다.
+    private void HideCardTemplate(BlackjackCardView cardTemplate)
+    {
+        if (cardTemplate != null && cardTemplate.gameObject.scene.IsValid()) cardTemplate.gameObject.SetActive(false);
     }
 
     // 이전에 생성한 카드 UI를 제거합니다.
