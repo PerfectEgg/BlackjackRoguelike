@@ -18,9 +18,9 @@ MonoBehaviour:
     \uC54C\uC9C0 \uBABB\uD568, \uC2DC\uAC04\uACFC \uC2F8\uC6B4 \uB300\uAC00\uB85C
     \uC601\uC6D0\uD788 \uC624\uD6C4 6\uC2DC \uD2F0\uD0C0\uC784\uC5D0 \uAC07\uD600
     \uBC84\uB9BC"
-  IdleSprite: {fileID: 21300000, guid: 9561ebe21e6efd742a40669b4cb2f0b1, type: 3}
-  AttackSprite: {fileID: 21300000, guid: d1fe82b520ca2e547b7769dc65524eeb, type: 3}
-  HitSprite: {fileID: 21300000, guid: c8345fe7b9614484e8323b9784934bfc, type: 3}
+  IdleSprite: {fileID: 21300000, guid: bc2c32533469e09448ed8af172909c29, type: 3}
+  AttackSprite: {fileID: 21300000, guid: ecab29ea4dd6bb44aa996b7bb02dbdb7, type: 3}
+  HitSprite: {fileID: 21300000, guid: 071d97ec587dd4f40bb0f039cb274047, type: 3}
   MaxHp: 150
   AttackMultiplier: 1
   DropGold: 200

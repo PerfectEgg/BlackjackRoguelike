@@ -63,6 +63,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private BlackjackCardView _playerCardTemplate;
     [SerializeField] private float _playerCardWidth = 170f;
     [SerializeField] private float _playerMaximumCardSpacing = 105f;
+    [Range(0f, 45f)] [SerializeField] private float _playerCardFanRotationPerStep = 10f;
+    [Range(0f, 30f)] [SerializeField] private float _playerCardFanVerticalOffsetPerStep = 5f;
 
     [Header("전투 버튼")]
     [SerializeField] private Button _hitButton;
@@ -748,7 +750,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         RefreshStatusUi();
         bool _hideDealerCards = _game.MonsterAbilities.HasHiddenDealerCard && _game.Match.State is not (MatchState.DealerTurn or MatchState.Finished);
         RebuildCards(_game.Match.DealerHand, _dealerCardContainer, _dealerCardViews, _dealerCardTemplate, _dealerCardWidth, _dealerMaximumCardSpacing, true, _hideDealerCards);
-        RebuildCards(_game.Match.PlayerHand, _playerCardContainer, _playerCardViews, _playerCardTemplate, _playerCardWidth, _playerMaximumCardSpacing);
+        RebuildCards(_game.Match.PlayerHand, _playerCardContainer, _playerCardViews, _playerCardTemplate, _playerCardWidth, _playerMaximumCardSpacing, fanPlayerCards: true);
         if (_dealerScoreText != null)
         {
             _dealerScoreText.text = _hideDealerCards
@@ -906,7 +908,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     }
 
     // 카드 컨테이너와 진영별 템플릿 설정에 따라 카드 크기와 간격을 배치합니다.
-    private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews, BlackjackCardView cardTemplate, float cardWidth, float maximumCardSpacing, bool isDealer = false, bool hideDealerCards = false)
+    private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews, BlackjackCardView cardTemplate, float cardWidth, float maximumCardSpacing, bool isDealer = false, bool hideDealerCards = false, bool fanPlayerCards = false)
     {
         if (cardContainer == null || cardTemplate == null) return;
         ClearCardViews(cardViews);
@@ -931,7 +933,12 @@ public sealed class BlackjackSystem : MonoBehaviour
             _cardTransform.anchorMin = _cardTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _cardTransform.pivot = new Vector2(0.5f, 0.5f);
             _cardTransform.sizeDelta = new Vector2(_safeCardWidth, _safeCardWidth * _aspectRatio);
-            _cardTransform.anchoredPosition = new Vector2(_startX + _spacing * _index, 0f);
+            float _distanceFromCenter = Mathf.Abs(_index - (_count - 1) * 0.5f);
+            float _verticalOffset = fanPlayerCards ? -_distanceFromCenter * _playerCardFanVerticalOffsetPerStep : 0f;
+            _cardTransform.anchoredPosition = new Vector2(_startX + _spacing * _index, _verticalOffset);
+            _cardTransform.localRotation = fanPlayerCards
+                ? Quaternion.Euler(0f, 0f, -(_index - (_count - 1) * 0.5f) * _playerCardFanRotationPerStep)
+                : Quaternion.identity;
             if (isDealer && hideDealerCards && _game.MonsterAbilities.IsDealerCardHidden(_index)) _cardView.SetHidden();
             else _cardView.SetCard(hand.Cards[_index]);
             _cardView.transform.SetAsLastSibling();
