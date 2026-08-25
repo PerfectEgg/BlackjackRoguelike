@@ -1558,13 +1558,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 460823420}
+  - component: {fileID: 460823422}
+  - component: {fileID: 460823421}
   m_Layer: 5
   m_Name: Card Template
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &460823420
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1572,19 +1574,96 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 460823419}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1891770814}
   - {fileID: 2030364913}
-  m_Father: {fileID: 1274126289}
+  m_Father: {fileID: 895169437}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 75, y: 100}
+  m_AnchoredPosition: {x: 0, y: 122.5}
+  m_SizeDelta: {x: 60, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &460823421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460823419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fee398997080b0c4fa45b1073c1369c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlackjackCardView
+  _cardText: {fileID: 2030364914}
+  _cardImage: {fileID: 1891770815}
+  _frontCardSprites:
+  - {fileID: 9051278647998638843, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -7121438975629192341, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 5915116163016589112, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -5731427265070191571, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 2412542746729358716, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -2597386963622857239, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 6748625561000627195, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 5440820101082609004, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -1736189953326236217, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -5271694647980965986, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -6115116013865087492, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 3467511822489873244, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -3324775939927820984, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -2004530859337777683, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 59949616662389628, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -5362823888170740378, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 2596623017415457510, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 4082896072109462586, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 8713911326953799473, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 6359669927527872721, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 2715941085186663020, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 1090944022274048492, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 7496727399700856802, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 4568779588698008725, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -4310799300443145728, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -5958204441538500225, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -4574209320332817383, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 5848006408420522968, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -2093315178028423605, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 6729888871603668643, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -8036360525682085899, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -1916019834584122452, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 4822902654264953886, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -1436047537427367701, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -6448288062771808595, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 4990649229319335564, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -2538389434118370162, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -2685640102608834189, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 8398603144070384738, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -833357688750515375, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 6364220586029717936, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 2549868266701954466, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -1189092358330379593, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 7179068055155583, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -1047356225610123799, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -6849456241779937225, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 5568532143551941579, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 163848705419263135, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -759377587199812021, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: -1868875434642318244, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 5624010811665176949, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  - {fileID: 1303415169013243328, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  _cardBackSprite: {fileID: -5044639396517056953, guid: 3eb5a83e9431dc842a7767b684973d2e, type: 3}
+--- !u!222 &460823422
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460823419}
+  m_CullTransparentMesh: 1
 --- !u!1 &494929245
 GameObject:
   m_ObjectHideFlags: 0
@@ -2181,6 +2260,43 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 624219590}
   m_CullTransparentMesh: 1
+--- !u!1 &725616050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 725616051}
+  m_Layer: 5
+  m_Name: 'Battle Panel '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &725616051
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725616050}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1274126289}
+  - {fileID: 1160782565}
+  m_Father: {fileID: 895169437}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &739333390
 GameObject:
   m_ObjectHideFlags: 0
@@ -2651,9 +2767,9 @@ MonoBehaviour:
   _playerBarrierIndicator: {fileID: 1937599161}
   _playerScoreText: {fileID: 1806899512}
   _hintText: {fileID: 0}
-  _dealerCardContainer: {fileID: 0}
-  _playerCardContainer: {fileID: 0}
-  _cardTemplate: {fileID: 0}
+  _dealerCardContainer: {fileID: 1274126289}
+  _playerCardContainer: {fileID: 1160782565}
+  _cardTemplate: {fileID: 460823421}
   _cardWidth: 150
   _maximumCardSpacing: 165
   _hitButton: {fileID: 1625477705}
@@ -2777,8 +2893,8 @@ RectTransform:
   - {fileID: 287695733}
   - {fileID: 2129716606}
   - {fileID: 845365159}
-  - {fileID: 1274126289}
-  - {fileID: 1160782565}
+  - {fileID: 725616051}
+  - {fileID: 460823420}
   - {fileID: 525188799}
   - {fileID: 1462509847}
   - {fileID: 2094366344}
@@ -3783,8 +3899,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1160782565}
   - component: {fileID: 1160782566}
-  - component: {fileID: 1160782568}
-  - component: {fileID: 1160782567}
   m_Layer: 5
   m_Name: Player Card Container
   m_TagString: Untagged
@@ -3799,12 +3913,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1160782564}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 895169437}
+  m_Father: {fileID: 725616051}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -3819,49 +3933,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1160782564}
   m_CullTransparentMesh: 1
---- !u!114 &1160782567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1160782564}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fee398997080b0c4fa45b1073c1369c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BlackjackCardView
-  _cardText: {fileID: 0}
---- !u!114 &1160782568
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1160782564}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.3735848, g: 0.3735848, b: 0.3735848, a: 0.5019608}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1247912421
 GameObject:
   m_ObjectHideFlags: 0
@@ -4009,8 +4080,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1274126289}
   - component: {fileID: 1274126290}
-  - component: {fileID: 1274126292}
-  - component: {fileID: 1274126291}
   m_Layer: 5
   m_Name: Dealer Card Container
   m_TagString: Untagged
@@ -4025,13 +4094,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1274126288}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 460823420}
-  m_Father: {fileID: 895169437}
+  m_Children: []
+  m_Father: {fileID: 725616051}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4046,49 +4114,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1274126288}
   m_CullTransparentMesh: 1
---- !u!114 &1274126291
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1274126288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fee398997080b0c4fa45b1073c1369c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BlackjackCardView
-  _cardText: {fileID: 0}
---- !u!114 &1274126292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1274126288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.3735848, g: 0.3735848, b: 0.3735848, a: 0.5019608}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1289917749
 GameObject:
   m_ObjectHideFlags: 0
@@ -5714,6 +5739,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1869268205}
   m_CullTransparentMesh: 1
+--- !u!1 &1891770813
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1891770814}
+  - component: {fileID: 1891770816}
+  - component: {fileID: 1891770815}
+  m_Layer: 5
+  m_Name: Image
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1891770814
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891770813}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 460823420}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1891770815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891770813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 9051278647998638843, guid: 6f788948e1eef664382928fd52039a3b, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1891770816
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891770813}
+  m_CullTransparentMesh: 1
 --- !u!1 &1937599161
 GameObject:
   m_ObjectHideFlags: 0
@@ -6221,7 +6321,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: card
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -6512,7 +6612,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2129716606}
   m_Layer: 5
-  m_Name: Battle Panel
+  m_Name: Information Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
