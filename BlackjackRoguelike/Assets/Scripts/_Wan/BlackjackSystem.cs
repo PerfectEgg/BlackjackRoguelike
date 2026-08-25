@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
@@ -22,6 +23,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private TMP_Text _stageText;
     [SerializeField] private TMP_Text _goldText;
     [SerializeField] private TMP_Text _dealerNameText;
+    [SerializeField] private Image _dealerSpriteImage;
     [SerializeField] private TMP_Text _dealerHpText;
     [SerializeField] private Image _dealerHpBarFillImage;
     [SerializeField] private TMP_Text _dealerAttackMultiplierText;
@@ -35,6 +37,20 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private TMP_Text _playerScoreText;
     [SerializeField] private TMP_Text _playerScoreBonusText;
     [SerializeField] private TMP_Text _hintText;
+
+    [Header("자동 진행 타이밍")]
+    [Min(0f)] [SerializeField] private float _openingCardInterval = 0.2f;
+    [Min(0f)] [SerializeField] private float _automaticDrawInterval = 0.4f;
+    [Min(0f)] [SerializeField] private float _resultDisplayDuration = 2.5f;
+    [Min(0f)] [SerializeField] private float _hitMotionDuration = 0.25f;
+    [Min(0f)] [SerializeField] private float _hitMotionDistance = 16f;
+    [Min(0f)] [SerializeField] private float _cardClearDuration = 1f;
+    [Min(0f)] [SerializeField] private float _nextRoundDelay = 1f;
+    [Min(0f)] [SerializeField] private float _shopPanelFadeDuration = 0.35f;
+
+    [Header("결과 피격 모션 UI")]
+    [SerializeField] private RectTransform _dealerHitMotionTarget;
+    [SerializeField] private RectTransform _playerHitMotionTarget;
 
     [Header("카드 UI")]
     [SerializeField] private RectTransform _dealerCardContainer;
@@ -80,6 +96,12 @@ public sealed class BlackjackSystem : MonoBehaviour
     [Header("상점 UI")]
     [SerializeField] private GameObject _shopPanel;
     [SerializeField] private TMP_Text _shopTitleText;
+    [SerializeField] private Sprite _shopkeeperSprite;
+    [Tooltip("상점 패시브 상품 1개를 표시할 슬롯입니다.")]
+    [SerializeField] private Transform _passiveShopSlot;
+    [Tooltip("상점 액티브 상품 2개를 표시할 슬롯입니다. 진열 순서대로 연결합니다.")]
+    [SerializeField] private Transform[] _activeShopSlots;
+    [Tooltip("상점 슬롯을 아직 연결하지 않았을 때만 사용하는 이전 방식의 직접 생성 컨테이너입니다.")]
     [SerializeField] private GameObject _shopOfferContent;
     [SerializeField] private Button _shopRefreshButton;
     [SerializeField] private TMP_Text _shopRefreshCostText;
@@ -99,6 +121,16 @@ public sealed class BlackjackSystem : MonoBehaviour
     private readonly HashSet<int> _selectedActiveRewardIndexes = new();
     private ItemType _selectedInventoryType = ItemType.Passive;
     private ItemDescriptionView _itemDescriptionView;
+    private Coroutine _openingDealCoroutine;
+    private Coroutine _dealerTurnCoroutine;
+    private Coroutine _resultCoroutine;
+    private Coroutine _hitMotionCoroutine;
+    private Coroutine _panelTransitionCoroutine;
+    private Coroutine _shopFadeCoroutine;
+    private StageItemDropResult _queuedReward;
+    private bool _isShopVisitQueued;
+    private bool _isShowingMatchResult;
+    private string _matchResultText;
 
     // 게임 매니저와 UI 버튼을 준비하고, 데이터베이스가 있으면 1스테이지 런을 시작합니다.
     private void Start()
@@ -121,22 +153,10 @@ public sealed class BlackjackSystem : MonoBehaviour
         RefreshBattleUi();
     }
 
-    // Space는 카드 공개와 딜러 턴 진행에만 사용하고, 선택은 화면 버튼으로 처리합니다.
+    // 자동 진행과 충돌하지 않도록 다음 패 블랙잭 디버그 키만 유지합니다.
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space)) _game.AdvanceMatch();
-        if (Input.GetKeyDown(KeyCode.N) || Input.GetKeyDown(KeyCode.R)) StartNextRound();
         if (Input.GetKeyDown(KeyCode.B)) _game.ForceNextPlayerOpeningBlackjack();
-        if (Input.GetKeyDown(KeyCode.T)) _game.ForceNextThreePlayerDrawsToSeven();
-    }
-
-    // 몬스터 처치 뒤에는 다음 스테이지로, 그 외에는 같은 상대와 다음 라운드를 시작합니다.
-    private void StartNextRound()
-    {
-        if (_game.IsWaitingForShop) return;
-        if (_game.Match.IsMatchActive) return;
-        if (_game.CanProceedToNextStage && _game.ProceedToNextStage()) return;
-        _game.RestartCurrentMatch();
     }
 
     // GameManager와 MatchManager 이벤트를 UI 갱신 함수에 연결합니다.
@@ -148,7 +168,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         _game.DamageApplied += OnDamageApplied;
         _game.GoldChanged += OnGoldChanged;
         _game.StageStarted += OnStageStarted;
-        _game.StageItemDropsGenerated += ShowRewardPanel;
+        _game.StageItemDropsGenerated += QueueRewardPanel;
         _game.ShopVisitRequested += OnShopVisitRequested;
         _game.ShopStockChanged += OnShopStockChanged;
         _game.PlayerStateChanged += RefreshStatusUi;
@@ -183,12 +203,15 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         RefreshBattleUi();
         if (_inventoryPanel != null && _inventoryPanel.activeSelf) RefreshInventoryUi();
+        if (state == MatchState.OpeningDeal || state == MatchState.PlayerForcedDraw) StartOpeningDealSequence();
+        if (state == MatchState.DealerTurn) StartDealerTurnSequence();
     }
 
     // 매치가 끝난 뒤 전투 정보를 갱신합니다.
     private void OnMatchEnded(MatchResult result)
     {
         RefreshBattleUi();
+        if (!_game.Match.IsMatchActive) StartMatchResultSequence(result);
     }
 
     // 피해가 적용된 뒤 체력을 갱신합니다.
@@ -206,7 +229,9 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 새 스테이지 시작 시 적 이름과 패를 갱신합니다.
     private void OnStageStarted(int stageNumber, Monster monster)
     {
+        SetMonsterIdleSprite();
         RefreshBattleUi();
+        StartOpeningDealSequence();
     }
 
     // 아이템 획득으로 인벤토리·공격력·카드 조작 버튼 상태를 갱신합니다.
@@ -215,11 +240,257 @@ public sealed class BlackjackSystem : MonoBehaviour
         RefreshBattleUi();
     }
 
-    // 4·9스테이지 몬스터 처치 뒤 다음 스테이지 전 상점 방문이 요청되면 패널을 표시합니다.
+    // 처치 보상 선택이 끝난 뒤 상점을 표시할 수 있도록 요청만 보관합니다.
     private void OnShopVisitRequested(int nextStageNumber)
     {
-        if (_rewardPanel != null && _rewardPanel.activeSelf) return;
-        ShowShopPanel();
+        _isShopVisitQueued = true;
+    }
+
+    // 처치 직후에는 결과·카드 제거 연출을 우선 처리하기 위해 보상 표시를 예약합니다.
+    private void QueueRewardPanel(StageItemDropResult itemDrops)
+    {
+        _queuedReward = itemDrops;
+        if (_game == null || _game.Match.IsMatchActive || _resultCoroutine != null) return;
+
+        MatchResult _directDefeatResult = new(MatchOutcome.PlayerWin, _game.Match.PlayerScore, _game.Match.DealerScore, _game.Match.PlayerHand.IsBlackjack, _game.Match.DealerHand.IsBlackjack);
+        StartMatchResultSequence(_directDefeatResult);
+    }
+
+    // 초기 패와 강제 드로우 카드를 설정한 간격마다 한 장씩 공개합니다.
+    private void StartOpeningDealSequence()
+    {
+        if (_game == null || !_game.Match.IsMatchActive) return;
+        if (_openingDealCoroutine != null) StopCoroutine(_openingDealCoroutine);
+        _openingDealCoroutine = StartCoroutine(RunOpeningDealSequence());
+    }
+
+    // 딜러 턴에서만 자동으로 다음 카드를 공개합니다.
+    private void StartDealerTurnSequence()
+    {
+        if (_game == null || !_game.Match.IsMatchActive) return;
+        if (_dealerTurnCoroutine != null) StopCoroutine(_dealerTurnCoroutine);
+        _dealerTurnCoroutine = StartCoroutine(RunDealerTurnSequence());
+    }
+
+    // 초기 배분과 플레이어 강제 드로우를 상태가 끝날 때까지 자동 진행합니다.
+    private IEnumerator RunOpeningDealSequence()
+    {
+        while (_game != null && _game.Match.IsMatchActive && _game.Match.State is MatchState.OpeningDeal or MatchState.PlayerForcedDraw)
+        {
+            float _delay = _game.Match.State == MatchState.OpeningDeal ? _openingCardInterval : _automaticDrawInterval;
+            yield return new WaitForSeconds(_delay);
+            if (_game.Match.IsMatchActive && _game.Match.State is MatchState.OpeningDeal or MatchState.PlayerForcedDraw) _game.AdvanceMatch();
+        }
+        _openingDealCoroutine = null;
+    }
+
+    // 딜러가 스탠드 또는 버스트할 때까지 일정 간격으로 자동 드로우합니다.
+    private IEnumerator RunDealerTurnSequence()
+    {
+        while (_game != null && _game.Match.IsMatchActive && _game.Match.State == MatchState.DealerTurn)
+        {
+            yield return new WaitForSeconds(_automaticDrawInterval);
+            if (_game.Match.IsMatchActive && _game.Match.State == MatchState.DealerTurn) _game.AdvanceMatch();
+        }
+        _dealerTurnCoroutine = null;
+    }
+
+    // 결과 표시, 카드 제거, 다음 라운드 또는 보상 화면 전환을 순서대로 처리합니다.
+    private void StartMatchResultSequence(MatchResult result)
+    {
+        if (_resultCoroutine != null) StopCoroutine(_resultCoroutine);
+        if (_hitMotionCoroutine != null) StopCoroutine(_hitMotionCoroutine);
+        _resultCoroutine = StartCoroutine(RunMatchResultSequence(result));
+    }
+
+    // 결과를 잠시 보여준 뒤 양쪽 카드를 사라지게 하고 후속 화면으로 이동합니다.
+    private IEnumerator RunMatchResultSequence(MatchResult result)
+    {
+        _isShowingMatchResult = true;
+        _matchResultText = GetMatchResultText(result);
+        SetMonsterResultSprite(result);
+        _hitMotionCoroutine = StartCoroutine(PlayHitMotion(result));
+        RefreshBattleUi();
+        if (result.Outcome == MatchOutcome.PlayerWin && _game.Monster.IsDefeated)
+        {
+            yield return StartCoroutine(FadeOutDefeatedMonsterSprite());
+        }
+        else
+        {
+            yield return new WaitForSeconds(_resultDisplayDuration);
+            SetMonsterIdleSprite();
+        }
+        yield return StartCoroutine(FadeAndClearBattleCards());
+        yield return new WaitForSeconds(_nextRoundDelay);
+
+        _isShowingMatchResult = false;
+        _resultCoroutine = null;
+        if (_queuedReward != null)
+        {
+            StageItemDropResult _reward = _queuedReward;
+            _queuedReward = null;
+            ShowRewardPanel(_reward);
+            yield break;
+        }
+        if (_isShopVisitQueued || _game.IsWaitingForShop)
+        {
+            ShowShopPanel();
+            yield break;
+        }
+        StartAutomaticNextMatch();
+    }
+
+    // 승패에 따라 피해를 받은 진영의 UI를 짧게 좌우로 튕겨 공격 적중감을 표시합니다.
+    private IEnumerator PlayHitMotion(MatchResult result)
+    {
+        RectTransform _target = result.Outcome switch
+        {
+            MatchOutcome.PlayerWin => _dealerHitMotionTarget,
+            MatchOutcome.DealerWin => _playerHitMotionTarget,
+            _ => null
+        };
+        if (_target == null || _hitMotionDuration <= 0f)
+        {
+            _hitMotionCoroutine = null;
+            yield break;
+        }
+
+        Vector2 _origin = _target.anchoredPosition;
+        float _direction = result.Outcome == MatchOutcome.PlayerWin ? 1f : -1f;
+        float _elapsed = 0f;
+        while (_elapsed < _hitMotionDuration)
+        {
+            _elapsed += Time.deltaTime;
+            float _progress = Mathf.Clamp01(_elapsed / _hitMotionDuration);
+            float _offset = Mathf.Sin(_progress * Mathf.PI) * _hitMotionDistance * _direction;
+            _target.anchoredPosition = _origin + Vector2.right * _offset;
+            yield return null;
+        }
+        _target.anchoredPosition = _origin;
+        _hitMotionCoroutine = null;
+    }
+
+    // 처치된 몬스터의 피격 스프라이트를 결과 표시 시간 동안 페이드 아웃한 뒤 비웁니다.
+    private IEnumerator FadeOutDefeatedMonsterSprite()
+    {
+        if (_dealerSpriteImage == null)
+        {
+            yield return new WaitForSeconds(_resultDisplayDuration);
+            yield break;
+        }
+
+        CanvasGroup _canvasGroup = _dealerSpriteImage.GetComponent<CanvasGroup>();
+        if (_canvasGroup == null) _canvasGroup = _dealerSpriteImage.gameObject.AddComponent<CanvasGroup>();
+        _canvasGroup.alpha = 1f;
+        float _elapsed = 0f;
+        float _duration = Mathf.Max(0.01f, _resultDisplayDuration);
+        while (_elapsed < _duration)
+        {
+            _elapsed += Time.deltaTime;
+            _canvasGroup.alpha = 1f - Mathf.Clamp01(_elapsed / _duration);
+            yield return null;
+        }
+
+        _dealerSpriteImage.sprite = null;
+        _dealerSpriteImage.enabled = false;
+        _canvasGroup.alpha = 1f;
+    }
+
+    // 카드 UI를 지정한 시간 동안 투명하게 만든 뒤 제거합니다.
+    private IEnumerator FadeAndClearBattleCards()
+    {
+        List<CanvasGroup> _canvasGroups = new();
+        AddCardCanvasGroups(_dealerCardViews, _canvasGroups);
+        AddCardCanvasGroups(_playerCardViews, _canvasGroups);
+        float _elapsed = 0f;
+        float _duration = Mathf.Max(0.01f, _cardClearDuration);
+        while (_elapsed < _duration)
+        {
+            _elapsed += Time.deltaTime;
+            float _alpha = 1f - Mathf.Clamp01(_elapsed / _duration);
+            foreach (CanvasGroup _canvasGroup in _canvasGroups)
+            {
+                if (_canvasGroup != null) _canvasGroup.alpha = _alpha;
+            }
+            yield return null;
+        }
+        ClearBattleCardsImmediately();
+    }
+
+    // 상점·보상 전환 전에 이전 전투의 카드와 점수 표기를 즉시 비웁니다.
+    private void ClearBattleCardsImmediately()
+    {
+        _game?.ClearFinishedMatchHands();
+        ClearCardViews(_dealerCardViews);
+        ClearCardViews(_playerCardViews);
+        if (_dealerScoreText != null) _dealerScoreText.text = string.Empty;
+        if (_dealerScoreBonusText != null) _dealerScoreBonusText.text = string.Empty;
+        if (_playerScoreText != null) _playerScoreText.text = string.Empty;
+        if (_playerScoreBonusText != null) _playerScoreBonusText.text = string.Empty;
+    }
+
+    // 카드 뷰에 페이드용 CanvasGroup을 준비합니다.
+    private void AddCardCanvasGroups(IReadOnlyList<BlackjackCardView> cardViews, List<CanvasGroup> canvasGroups)
+    {
+        foreach (BlackjackCardView _cardView in cardViews)
+        {
+            if (_cardView == null) continue;
+            CanvasGroup _canvasGroup = _cardView.GetComponent<CanvasGroup>();
+            if (_canvasGroup == null) _canvasGroup = _cardView.gameObject.AddComponent<CanvasGroup>();
+            _canvasGroup.alpha = 1f;
+            canvasGroups.Add(_canvasGroup);
+        }
+    }
+
+    // 보상·상점 대기 상태가 아니라면 다음 스테이지 또는 같은 몬스터의 새 라운드를 시작합니다.
+    private void StartAutomaticNextMatch()
+    {
+        if (_game == null || _game.IsWaitingForShop || _game.Match.IsMatchActive) return;
+        if (_game.CanProceedToNextStage && _game.ProceedToNextStage()) return;
+        _game.RestartCurrentMatch();
+    }
+
+    // 승패 결과를 결과 연출 중 안내 문구로 표시합니다.
+    private string GetMatchResultText(MatchResult result)
+    {
+        return result.Outcome switch
+        {
+            MatchOutcome.PlayerWin => "VICTORY! 공격 적중",
+            MatchOutcome.DealerWin => "DEFEAT! 공격을 받았습니다",
+            _ => "DRAW"
+        };
+    }
+
+    // 결과 연출 중 몬스터의 승패에 맞춰 공격 또는 피격 스프라이트를 표시합니다.
+    private void SetMonsterResultSprite(MatchResult result)
+    {
+        if (_game?.Monster?.Definition == null || _dealerSpriteImage == null) return;
+        MonsterDefinition _definition = _game.Monster.Definition;
+        Sprite _sprite = result.Outcome switch
+        {
+            MatchOutcome.PlayerWin => _definition.HitSprite,
+            MatchOutcome.DealerWin => _definition.AttackSprite,
+            _ => _definition.IdleSprite
+        };
+        SetMonsterSprite(_sprite ?? _definition.IdleSprite);
+    }
+
+    // 전투 결과 연출이 끝나거나 새 스테이지가 시작되면 기본 스프라이트로 되돌립니다.
+    private void SetMonsterIdleSprite()
+    {
+        if (_game?.Monster?.Definition == null) return;
+        MonsterDefinition _definition = _game.Monster.Definition;
+        SetMonsterSprite(_definition.IdleSprite);
+    }
+
+    // 중앙 몬스터 UI 이미지에 지정한 스프라이트를 반영합니다.
+    private void SetMonsterSprite(Sprite sprite)
+    {
+        if (_dealerSpriteImage == null) return;
+        CanvasGroup _canvasGroup = _dealerSpriteImage.GetComponent<CanvasGroup>();
+        if (_canvasGroup != null) _canvasGroup.alpha = 1f;
+        _dealerSpriteImage.sprite = sprite;
+        _dealerSpriteImage.enabled = sprite != null;
     }
 
     // 상점 최초 진열·구매·새로 고침 뒤 표시된 상품과 가격을 갱신합니다.
@@ -322,21 +593,25 @@ public sealed class BlackjackSystem : MonoBehaviour
         CloseRewardPanel();
     }
 
-    // 보상 창을 닫고 인벤토리 표기를 갱신합니다.
+    // 보상 창을 닫고 다음 상점 또는 다음 라운드를 예약합니다.
     private void CloseRewardPanel()
     {
         if (_rewardPanel != null) _rewardPanel.SetActive(false);
         _pendingReward = null;
         RefreshInventoryUi();
-        if (_game.IsWaitingForShop) ShowShopPanel();
+        StartPanelTransitionSequence();
     }
 
     // 현재 상점의 진열 정보를 표시하고 상점 패널을 엽니다.
     private void ShowShopPanel()
     {
         if (_shopPanel == null || !_game.IsWaitingForShop) return;
+        _isShopVisitQueued = false;
+        ClearBattleCardsImmediately();
+        SetShopkeeperSprite();
         _shopPanel.SetActive(true);
         RefreshShopUi();
+        StartShopFade(true);
     }
 
     // 상품 이름·희귀도·가격과 새로 고침 가격을 상점 UI에 표시합니다.
@@ -347,23 +622,40 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_shopTitleText != null) _shopTitleText.text = $"SHOP | STAGE {_shop.StageNumber}";
 
         ClearItemIconViews(_shopOfferViews);
-        if (_shopOfferContent != null)
+        int _activeOfferIndex = 0;
+        for (int _index = 0; _index < _shop.Offers.Count; _index++)
         {
-            for (int _index = 0; _index < _shop.Offers.Count; _index++)
-            {
-                int _offerIndex = _index;
-                ShopOffer _offer = _shop.Offers[_index];
-                string _footerText = _offer.IsSold ? "SOLD OUT" : (_game.HasFreeShopPurchaseTicket ? $"{_offer.Price} GOLD | TICKET" : $"{_offer.Price} GOLD");
-                ItemIconView _view = CreateItemIcon(_offer.Item, _shopOfferContent.transform, false, () => TryBuyShopOffer(_offerIndex), _footerText);
-                if (_view == null) continue;
-                _view.SetInteractable(!_offer.IsSold && (_game.Gold >= _offer.Price || _game.HasFreeShopPurchaseTicket));
-                _view.SetPurchased(_offer.IsSold);
-                _shopOfferViews.Add(_view);
-            }
+            int _offerIndex = _index;
+            ShopOffer _offer = _shop.Offers[_index];
+            int _currentActiveOfferIndex = _offer.Item.ItemType == ItemType.Active ? _activeOfferIndex++ : -1;
+            Transform _parent = GetShopOfferParent(_offer.Item.ItemType, _currentActiveOfferIndex);
+            string _footerText = _offer.IsSold ? "SOLD OUT" : (_game.HasFreeShopPurchaseTicket ? $"{_offer.Price} GOLD | TICKET" : $"{_offer.Price} GOLD");
+            ItemIconView _view = CreateItemIcon(_offer.Item, _parent, false, () => TryBuyShopOffer(_offerIndex), _footerText);
+            if (_view == null) continue;
+            _view.SetInteractable(!_offer.IsSold && (_game.Gold >= _offer.Price || _game.HasFreeShopPurchaseTicket));
+            _view.SetPurchased(_offer.IsSold);
+            _shopOfferViews.Add(_view);
         }
 
-        if (_shopRefreshCostText != null) _shopRefreshCostText.text = $"REFRESH: {_shop.CurrentRefreshCost} GOLD";
+        if (_shopRefreshCostText != null) _shopRefreshCostText.text = _shop.CurrentRefreshCost.ToString();
         if (_shopRefreshButton != null) _shopRefreshButton.interactable = _game.Gold >= _shop.CurrentRefreshCost;
+    }
+
+    // 패시브는 전용 한 칸, 액티브는 진열 순서의 전용 슬롯을 우선 사용합니다.
+    private Transform GetShopOfferParent(ItemType itemType, int activeOfferIndex)
+    {
+        if (itemType == ItemType.Passive && _passiveShopSlot != null) return _passiveShopSlot;
+        if (itemType == ItemType.Active && _activeShopSlots != null && _activeShopSlots.Length > 0)
+        {
+            return activeOfferIndex >= 0 && activeOfferIndex < _activeShopSlots.Length ? _activeShopSlots[activeOfferIndex] : null;
+        }
+        return _shopOfferContent != null ? _shopOfferContent.transform : null;
+    }
+
+    // 모든 상점 방문에서 공통 상점 주인 스프라이트를 표시합니다.
+    private void SetShopkeeperSprite()
+    {
+        SetMonsterSprite(_shopkeeperSprite);
     }
 
     // 지정한 상점 진열 아이템을 구매하고 버튼 표기를 갱신합니다.
@@ -384,8 +676,69 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void ExitShop()
     {
         if (!_game.CompleteShopVisit()) return;
-        if (_shopPanel != null) _shopPanel.SetActive(false);
+        StartShopFade(false);
+    }
+
+    // 상점 패널 전체를 투명도 변화로 열거나 닫습니다.
+    private void StartShopFade(bool fadeIn)
+    {
+        if (_shopFadeCoroutine != null) StopCoroutine(_shopFadeCoroutine);
+        _shopFadeCoroutine = StartCoroutine(FadeShopPanel(fadeIn));
+    }
+
+    // 페이드 아웃이 끝난 뒤에만 패널을 닫고 다음 스테이지 진행을 예약합니다.
+    private IEnumerator FadeShopPanel(bool fadeIn)
+    {
+        if (_shopPanel == null) yield break;
+        CanvasGroup _canvasGroup = _shopPanel.GetComponent<CanvasGroup>();
+        if (_canvasGroup == null) _canvasGroup = _shopPanel.AddComponent<CanvasGroup>();
+
+        _canvasGroup.interactable = false;
+        _canvasGroup.blocksRaycasts = false;
+        float _startAlpha = fadeIn ? 0f : _canvasGroup.alpha;
+        float _endAlpha = fadeIn ? 1f : 0f;
+        _canvasGroup.alpha = _startAlpha;
+        float _elapsed = 0f;
+        float _duration = Mathf.Max(0.01f, _shopPanelFadeDuration);
+        while (_elapsed < _duration)
+        {
+            _elapsed += Time.deltaTime;
+            _canvasGroup.alpha = Mathf.Lerp(_startAlpha, _endAlpha, Mathf.Clamp01(_elapsed / _duration));
+            yield return null;
+        }
+        _canvasGroup.alpha = _endAlpha;
+        _shopFadeCoroutine = null;
+
+        if (fadeIn)
+        {
+            _canvasGroup.interactable = true;
+            _canvasGroup.blocksRaycasts = true;
+            yield break;
+        }
+
+        _shopPanel.SetActive(false);
         RefreshBattleUi();
+        StartPanelTransitionSequence();
+    }
+
+    // 보상 수령 또는 상점 퇴장 후 지정 시간만큼 기다렸다 다음 흐름을 시작합니다.
+    private void StartPanelTransitionSequence()
+    {
+        if (_panelTransitionCoroutine != null) StopCoroutine(_panelTransitionCoroutine);
+        _panelTransitionCoroutine = StartCoroutine(RunPanelTransitionSequence());
+    }
+
+    // 패널 전환 직후 전투가 바로 시작되지 않도록 짧은 여유 시간을 둡니다.
+    private IEnumerator RunPanelTransitionSequence()
+    {
+        yield return new WaitForSeconds(_nextRoundDelay);
+        _panelTransitionCoroutine = null;
+        if (_game.IsWaitingForShop)
+        {
+            ShowShopPanel();
+            yield break;
+        }
+        StartAutomaticNextMatch();
     }
 
     // 체력, 점수, 카드, 버튼 상태와 안내 문구를 갱신합니다.
@@ -605,13 +958,14 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 현재 매치 상태에 맞는 안내 문구를 반환합니다.
     private string GetHintText()
     {
+        if (_isShowingMatchResult) return _matchResultText;
         return _game.Match.State switch
         {
-            MatchState.OpeningDeal => "SPACE: 시작 카드를 한 장씩 공개",
-            MatchState.PlayerForcedDraw => "SPACE: 강제 드로우 카드를 한 장씩 공개",
+            MatchState.OpeningDeal => "카드를 나누는 중...",
+            MatchState.PlayerForcedDraw => "강제 드로우 진행 중...",
             MatchState.PlayerTurn => "카드를 선택하세요: HIT / STAND / DOUBLE DOWN",
-            MatchState.DealerTurn => "SPACE: 몬스터의 다음 카드를 공개",
-            _ => "N / R: 다음 라운드 시작 | B: 다음 패 블랙잭 | T: 다음 3장 7 고정"
+            MatchState.DealerTurn => "몬스터가 카드를 뽑는 중...",
+            _ => "결과를 정리하는 중..."
         };
     }
 
@@ -655,7 +1009,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         _game.DamageApplied -= OnDamageApplied;
         _game.GoldChanged -= OnGoldChanged;
         _game.StageStarted -= OnStageStarted;
-        _game.StageItemDropsGenerated -= ShowRewardPanel;
+        _game.StageItemDropsGenerated -= QueueRewardPanel;
         _game.ShopVisitRequested -= OnShopVisitRequested;
         _game.ShopStockChanged -= OnShopStockChanged;
         _game.PlayerStateChanged -= RefreshStatusUi;

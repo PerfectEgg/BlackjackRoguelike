@@ -12,8 +12,13 @@ public class MonsterDefinition : ScriptableObject
     [TextArea]
     [Tooltip("몬스터 아이콘에 마우스를 올렸을 때 표시할 기본 설명입니다.")]
     public string Description;
-    [Tooltip("몬스터를 표시할 스프라이트입니다.")]
-    public Sprite Icon;
+    [Header("몬스터 전투 스프라이트")]
+    [Tooltip("평상시 표시할 몬스터 스프라이트입니다.")]
+    public Sprite IdleSprite;
+    [Tooltip("몬스터가 플레이어를 공격한 결과 연출에 표시할 스프라이트입니다.")]
+    public Sprite AttackSprite;
+    [Tooltip("몬스터가 플레이어 공격을 받은 결과 연출에 표시할 스프라이트입니다.")]
+    public Sprite HitSprite;
     [Tooltip("몬스터의 최대 체력입니다.")]
     [Min(1)] public int MaxHp = 100;
     [Tooltip("몬스터가 승리할 때 점수에 곱할 공격력 계수입니다.")]

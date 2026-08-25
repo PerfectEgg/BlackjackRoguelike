@@ -84,6 +84,13 @@ public sealed class MatchManager
         ChangeState(MatchState.OpeningDeal);
     }
 
+    // 완료된 전투 화면을 정리할 때 양쪽 패 데이터를 비웁니다.
+    public void ClearHands()
+    {
+        PlayerHand.Clear();
+        DealerHand.Clear();
+    }
+
     // 영구 패시브가 제공하는 플레이어 점수 보정 범위를 설정합니다.
     public void SetPlayerScoreAdjustmentRange(int adjustmentRange)
     {

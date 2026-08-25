@@ -17,7 +17,9 @@ MonoBehaviour:
   Description: "\uD6C4\uCD94 \uC5F0\uAE30\uAC00 \uAC00\uB4DD\uD55C \uC9D1 \uC548\uC5D0\uC11C
     \uB09C\uD3ED\uD558\uAC8C \uC544\uAE30 \uB3FC\uC9C0\uB97C \uB3CC\uBCF4\uB2E4\uAC00
     \uC568\uB9AC\uC2A4\uC5D0\uAC8C \uB118\uAE40"
-  Icon: {fileID: 0}
+  IdleSprite: {fileID: 21300000, guid: 6a910a7c84ec34c468119525624cdb27, type: 3}
+  AttackSprite: {fileID: 21300000, guid: fc4e5c04683f13b4e833ea14960612c5, type: 3}
+  HitSprite: {fileID: 21300000, guid: 158dc830e53797044aaf5639ea2ce51f, type: 3}
   MaxHp: 100
   AttackMultiplier: 0.75
   DropGold: 100

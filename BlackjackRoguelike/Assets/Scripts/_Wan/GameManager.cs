@@ -367,6 +367,13 @@ public sealed class GameManager
         return true;
     }
 
+    // 결과 연출이 끝난 완료 매치의 패 데이터를 UI 전환 전에 비웁니다.
+    public void ClearFinishedMatchHands()
+    {
+        if (Match.IsMatchActive) return;
+        Match.ClearHands();
+    }
+
     // 다음 새 매치에서 플레이어 초기 패 블랙잭을 강제합니다.
     public void ForceNextPlayerOpeningBlackjack()
     {
