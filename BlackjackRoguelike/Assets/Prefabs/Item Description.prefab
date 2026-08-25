@@ -100,7 +100,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -155,6 +155,7 @@ MonoBehaviour:
   _commonNameColor: {r: 0.38, g: 0.72, b: 1, a: 1}
   _rareNameColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   _legendaryNameColor: {r: 1, g: 0.38, b: 0.38, a: 1}
+  _monsterNameColor: {r: 0.88, g: 0.88, b: 0.88, a: 1}
 --- !u!1 &3885794746418899251
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,3 +295,4 @@ MonoBehaviour:
   _commonNameColor: {r: 0.38, g: 0.72, b: 1, a: 1}
   _rareNameColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   _legendaryNameColor: {r: 1, g: 0.38, b: 0.38, a: 1}
+  _monsterNameColor: {r: 0.88, g: 0.88, b: 0.88, a: 1}

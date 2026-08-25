@@ -127,12 +127,16 @@ public sealed class BlackjackSystem : MonoBehaviour
     private Coroutine _dealerTurnCoroutine;
     private Coroutine _resultCoroutine;
     private Coroutine _hitMotionCoroutine;
+    private Coroutine _dealerHpAnimationCoroutine;
+    private Coroutine _playerHpAnimationCoroutine;
     private Coroutine _panelTransitionCoroutine;
     private Coroutine _shopFadeCoroutine;
     private StageItemDropResult _queuedReward;
     private bool _isShopVisitQueued;
     private bool _isShowingMatchResult;
     private string _matchResultText;
+    private float _displayedDealerHp = -1f;
+    private float _displayedPlayerHp = -1f;
 
     // 게임 매니저와 UI 버튼을 준비하고, 데이터베이스가 있으면 1스테이지 런을 시작합니다.
     private void Start()
@@ -216,9 +220,10 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (!_game.Match.IsMatchActive) StartMatchResultSequence(result);
     }
 
-    // 피해가 적용된 뒤 체력을 갱신합니다.
+    // 피해가 적용된 뒤 처치 피해가 아니면 결과 표시 시간의 절반 동안 체력 UI를 감소시킵니다.
     private void OnDamageApplied(DamageResult result)
     {
+        StartDamageHpAnimation(result);
         RefreshBattleUi();
     }
 
@@ -232,6 +237,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void OnStageStarted(int stageNumber, Monster monster)
     {
         SetMonsterIdleSprite();
+        BindMonsterHover();
         RefreshBattleUi();
         StartOpeningDealSequence();
     }
@@ -495,6 +501,16 @@ public sealed class BlackjackSystem : MonoBehaviour
         _dealerSpriteImage.enabled = sprite != null;
     }
 
+    // 중앙 몬스터 Image에 현재 스테이지의 호버 설명 처리기를 준비합니다.
+    private void BindMonsterHover()
+    {
+        if (_dealerSpriteImage == null || _game?.Monster?.Definition == null || _itemDescriptionView == null) return;
+        _dealerSpriteImage.raycastTarget = true;
+        MonsterHoverView _hoverView = _dealerSpriteImage.GetComponent<MonsterHoverView>();
+        if (_hoverView == null) _hoverView = _dealerSpriteImage.gameObject.AddComponent<MonsterHoverView>();
+        _hoverView.Setup(_game.Monster.Definition, _itemDescriptionView);
+    }
+
     // 상점 최초 진열·구매·새로 고침 뒤 표시된 상품과 가격을 갱신합니다.
     private void OnShopStockChanged(ShopManager shop)
     {
@@ -694,6 +710,13 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_shopPanel == null) yield break;
         CanvasGroup _canvasGroup = _shopPanel.GetComponent<CanvasGroup>();
         if (_canvasGroup == null) _canvasGroup = _shopPanel.AddComponent<CanvasGroup>();
+        CanvasGroup _shopkeeperCanvasGroup = null;
+        if (!fadeIn && _dealerSpriteImage != null)
+        {
+            _shopkeeperCanvasGroup = _dealerSpriteImage.GetComponent<CanvasGroup>();
+            if (_shopkeeperCanvasGroup == null) _shopkeeperCanvasGroup = _dealerSpriteImage.gameObject.AddComponent<CanvasGroup>();
+            _shopkeeperCanvasGroup.alpha = 1f;
+        }
 
         _canvasGroup.interactable = false;
         _canvasGroup.blocksRaycasts = false;
@@ -705,7 +728,9 @@ public sealed class BlackjackSystem : MonoBehaviour
         while (_elapsed < _duration)
         {
             _elapsed += Time.deltaTime;
-            _canvasGroup.alpha = Mathf.Lerp(_startAlpha, _endAlpha, Mathf.Clamp01(_elapsed / _duration));
+            float _progress = Mathf.Clamp01(_elapsed / _duration);
+            _canvasGroup.alpha = Mathf.Lerp(_startAlpha, _endAlpha, _progress);
+            if (_shopkeeperCanvasGroup != null) _shopkeeperCanvasGroup.alpha = 1f - _progress;
             yield return null;
         }
         _canvasGroup.alpha = _endAlpha;
@@ -718,6 +743,12 @@ public sealed class BlackjackSystem : MonoBehaviour
             yield break;
         }
 
+        if (_dealerSpriteImage != null)
+        {
+            _dealerSpriteImage.sprite = null;
+            _dealerSpriteImage.enabled = false;
+            if (_shopkeeperCanvasGroup != null) _shopkeeperCanvasGroup.alpha = 1f;
+        }
         _shopPanel.SetActive(false);
         RefreshBattleUi();
         StartPanelTransitionSequence();
@@ -780,11 +811,8 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_stageText != null) _stageText.text = $"스테이지 {_game.CurrentStage}";
         if (_goldText != null) _goldText.text = $"{_game.Gold}";
         if (_dealerNameText != null) _dealerNameText.text = _game.Monster.Name.ToUpperInvariant();
-        if (_dealerHpText != null) _dealerHpText.text = $"{_game.Monster.CurrentHp} / {_game.Monster.MaxHp}";
-        UpdateHpBar(_dealerHpBarFillImage, _game.Monster.CurrentHp, _game.Monster.MaxHp);
+        RefreshHpUi();
         if (_dealerAttackMultiplierText != null) _dealerAttackMultiplierText.text = $"x{_game.Monster.AttackMultiplier:0.##}";
-        if (_playerHpText != null) _playerHpText.text = $"{_game.Player.CurrentHp} / {_game.Player.MaxHp}";
-        UpdateHpBar(_playerHpBarFillImage, _game.Player.CurrentHp, _game.Player.MaxHp);
         if (_playerAttackMultiplierText != null) _playerAttackMultiplierText.text = $"x{_game.Player.AttackMultiplier:0.##}";
         SetDisabledAppearance(_playerBarrierIndicator, _game.Player.HasBarrier);
         RefreshInventoryUi();
@@ -795,6 +823,90 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         if (hpBarFillImage == null) return;
         hpBarFillImage.fillAmount = maxHp <= 0 ? 0f : Mathf.Clamp01((float)currentHp / maxHp);
+    }
+
+    // 현재 표시 중인 체력을 기준으로 숫자와 체력 바를 함께 갱신합니다.
+    private void RefreshHpUi()
+    {
+        if (_game == null) return;
+
+        if (_displayedDealerHp < 0f) _displayedDealerHp = _game.Monster.CurrentHp;
+        if (_displayedPlayerHp < 0f) _displayedPlayerHp = _game.Player.CurrentHp;
+
+        int _dealerHp = Mathf.Clamp(Mathf.CeilToInt(_displayedDealerHp), 0, _game.Monster.MaxHp);
+        int _playerHp = Mathf.Clamp(Mathf.CeilToInt(_displayedPlayerHp), 0, _game.Player.MaxHp);
+        if (_dealerHpText != null) _dealerHpText.text = $"{_dealerHp} / {_game.Monster.MaxHp}";
+        UpdateHpBar(_dealerHpBarFillImage, _dealerHp, _game.Monster.MaxHp);
+        if (_playerHpText != null) _playerHpText.text = $"{_playerHp} / {_game.Player.MaxHp}";
+        UpdateHpBar(_playerHpBarFillImage, _playerHp, _game.Player.MaxHp);
+    }
+
+    // 결과 피해는 수치와 바가 동시에 감소하도록 보간하고, 처치 피해만 즉시 0으로 표시합니다.
+    private void StartDamageHpAnimation(DamageResult result)
+    {
+        if (_game == null || result.Defender == null) return;
+
+        bool _isDealer = result.Defender == _game.Monster;
+        int _targetHp = result.Defender.CurrentHp;
+        if (_isDealer)
+        {
+            if (_dealerHpAnimationCoroutine != null) StopCoroutine(_dealerHpAnimationCoroutine);
+            if (_targetHp <= 0)
+            {
+                _displayedDealerHp = 0f;
+                return;
+            }
+            _dealerHpAnimationCoroutine = StartCoroutine(AnimateHpLoss(true, _targetHp));
+            return;
+        }
+
+        if (result.Defender != _game.Player) return;
+        if (_playerHpAnimationCoroutine != null) StopCoroutine(_playerHpAnimationCoroutine);
+        if (_targetHp <= 0)
+        {
+            _displayedPlayerHp = 0f;
+            return;
+        }
+        _playerHpAnimationCoroutine = StartCoroutine(AnimateHpLoss(false, _targetHp));
+    }
+
+    // 결과 표시 시간의 절반 동안 대상 체력 UI만 실제 체력값까지 천천히 감소시킵니다.
+    private IEnumerator AnimateHpLoss(bool isDealer, int targetHp)
+    {
+        float _duration = _resultDisplayDuration * 0.5f;
+        float _startHp = isDealer ? _displayedDealerHp : _displayedPlayerHp;
+        if (_startHp < 0f) _startHp = targetHp;
+        if (_duration <= 0f || _startHp <= targetHp)
+        {
+            if (isDealer) _displayedDealerHp = targetHp;
+            else _displayedPlayerHp = targetHp;
+            RefreshHpUi();
+            yield break;
+        }
+
+        float _elapsed = 0f;
+        while (_elapsed < _duration)
+        {
+            _elapsed += Time.deltaTime;
+            float _progress = Mathf.Clamp01(_elapsed / _duration);
+            float _hp = Mathf.Lerp(_startHp, targetHp, _progress);
+            if (isDealer) _displayedDealerHp = _hp;
+            else _displayedPlayerHp = _hp;
+            RefreshHpUi();
+            yield return null;
+        }
+
+        if (isDealer)
+        {
+            _displayedDealerHp = targetHp;
+            _dealerHpAnimationCoroutine = null;
+        }
+        else
+        {
+            _displayedPlayerHp = targetHp;
+            _playerHpAnimationCoroutine = null;
+        }
+        RefreshHpUi();
     }
 
     // UI를 숨기지 않고, 비활성 상태에는 반투명·비클릭 상태로 표시합니다.

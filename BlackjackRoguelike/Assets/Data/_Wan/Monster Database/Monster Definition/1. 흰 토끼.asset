@@ -23,4 +23,5 @@ MonoBehaviour:
   MaxHp: 50
   AttackMultiplier: 0.1
   DropGold: 50
-  Abilities: []
+  Abilities:
+  - {fileID: 11400000, guid: 0d61c85b756f9464fa355478cf63da97, type: 2}

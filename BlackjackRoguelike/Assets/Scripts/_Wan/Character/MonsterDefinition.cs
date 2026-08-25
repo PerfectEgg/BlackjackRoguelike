@@ -29,19 +29,26 @@ public class MonsterDefinition : ScriptableObject
     [Tooltip("몬스터 아이콘 호버 시 특성 설명을 함께 표시할 특성 에셋 목록입니다.")]
     public List<MonsterAbilityDefinition> Abilities = new();
 
-    // 몬스터 호버 UI가 이름·설명·특성을 한 번에 표시할 때 사용할 텍스트를 만듭니다.
-    public string GetTooltipText()
+    // 몬스터 호버 UI 본문에 표시할 특성 설명만 순서대로 만듭니다.
+    public string GetTooltipDescription()
     {
-        string _tooltipText = string.IsNullOrWhiteSpace(Description) ? MonsterName : $"{MonsterName}\n\n{Description}";
-        if (Abilities == null || Abilities.Count == 0) return _tooltipText;
+        if (Abilities == null || Abilities.Count == 0) return string.Empty;
 
-        _tooltipText += "\n\n[특성]";
+        string _tooltipText = string.Empty;
         foreach (MonsterAbilityDefinition _ability in Abilities)
         {
             if (_ability == null) continue;
-            _tooltipText += $"\n\n{_ability.GetTooltipText()}";
+            if (!string.IsNullOrWhiteSpace(_tooltipText)) _tooltipText += "\n\n";
+            _tooltipText += _ability.GetTooltipText();
         }
 
         return _tooltipText;
+    }
+
+    // 기존 외부 호출 호환을 위해 이름과 특성 설명을 합친 텍스트를 반환합니다.
+    public string GetTooltipText()
+    {
+        string _description = GetTooltipDescription();
+        return string.IsNullOrWhiteSpace(_description) ? MonsterName : $"{MonsterName}\n\n{_description}";
     }
 }

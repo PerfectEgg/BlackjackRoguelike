@@ -10,6 +10,7 @@ public sealed class ItemDescriptionView : MonoBehaviour
     [SerializeField] private Color _commonNameColor = new(0.38f, 0.72f, 1f);
     [SerializeField] private Color _rareNameColor = new(1f, 0.85f, 0.35f);
     [SerializeField] private Color _legendaryNameColor = new(1f, 0.38f, 0.38f);
+    [SerializeField] private Color _monsterNameColor = new(0.88f, 0.88f, 0.88f);
 
     private Canvas _targetCanvas;
     private RectTransform _canvasRect;
@@ -28,6 +29,21 @@ public sealed class ItemDescriptionView : MonoBehaviour
     public void Show(ItemDefinition itemDefinition, Vector2 screenPosition)
     {
         if (itemDefinition == null) return;
+        string _colorCode = ColorUtility.ToHtmlStringRGB(GetRarityNameColor(itemDefinition.Rarity));
+        Show(itemDefinition.ItemName, $"[{GetRarityName(itemDefinition.Rarity)}]\n\n{itemDefinition.Description}", _colorCode, screenPosition);
+    }
+
+    // 몬스터 이름·설명·특성을 아이템 설명창과 같은 위치 규칙으로 표시합니다.
+    public void Show(MonsterDefinition monsterDefinition, Vector2 screenPosition)
+    {
+        if (monsterDefinition == null) return;
+        string _colorCode = ColorUtility.ToHtmlStringRGB(_monsterNameColor);
+        Show(monsterDefinition.MonsterName, monsterDefinition.GetTooltipDescription(), _colorCode, screenPosition);
+    }
+
+    // 제목 색상과 본문을 받아 공용 설명창을 표시합니다.
+    private void Show(string title, string body, string titleColorCode, Vector2 screenPosition)
+    {
         if (_descriptionRect == null) _descriptionRect = transform as RectTransform;
         if (_targetCanvas == null) _targetCanvas = GetComponentInParent<Canvas>();
         if (_descriptionRect == null || _targetCanvas == null) return;
@@ -35,8 +51,9 @@ public sealed class ItemDescriptionView : MonoBehaviour
         _canvasRect = _targetCanvas.transform as RectTransform;
         if (_detailText != null)
         {
-            string _colorCode = ColorUtility.ToHtmlStringRGB(GetRarityNameColor(itemDefinition.Rarity));
-            _detailText.text = $"<color=#{_colorCode}>{itemDefinition.ItemName}</color> [{GetRarityName(itemDefinition.Rarity)}]\n\n{itemDefinition.Description}";
+            _detailText.text = string.IsNullOrWhiteSpace(body)
+                ? $"<color=#{titleColorCode}>{title}</color>"
+                : $"<color=#{titleColorCode}>{title}</color>\n\n{body}";
         }
 
         // 설명 루트와 현재 설명을 마지막 형제로 보내 다른 패널보다 위에 표시합니다.
