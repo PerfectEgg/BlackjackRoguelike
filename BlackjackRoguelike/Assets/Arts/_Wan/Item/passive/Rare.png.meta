@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: f4989e62ea6fba34b9c4818bcc1d796b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4540687045677255197
+    second: passive_rare_0
+  - first:
+      213: -1292745665934145057
+    second: passive_rare_1
+  - first:
+      213: -4886549215988293648
+    second: passive_rare_2
+  - first:
+      213: -4700783044781796210
+    second: passive_rare_3
+  - first:
+      213: 2397973687240257976
+    second: passive_rare_4
+  - first:
+      213: 2047919526171504679
+    second: passive_rare_5
+  - first:
+      213: 1281633479612731593
+    second: passive_rare_6
+  - first:
+      213: -7081296161771374996
+    second: passive_rare_7
+  - first:
+      213: 8193816718555048105
+    second: passive_rare_8
+  - first:
+      213: -1571438799918448817
+    second: passive_rare_9
+  - first:
+      213: -844797257791907125
+    second: passive_rare_10
+  - first:
+      213: 4732537177029678011
+    second: passive_rare_11
+  - first:
+      213: 1023917509049660194
+    second: passive_rare_12
+  - first:
+      213: 1166930546300004532
+    second: passive_rare_13
+  - first:
+      213: -6293650742739462278
+    second: passive_rare_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: passive_rare_0
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 2503
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e57036803d3cf0c0800000000000000
+      internalID: -4540687045677255197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_1
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 2507
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd9c1158aae3f0ee0800000000000000
+      internalID: -1292745665934145057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_2
+      rect:
+        serializedVersion: 2
+        x: 1679
+        y: 2503
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ffdd8bc06d7f2cb0800000000000000
+      internalID: -4886549215988293648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_3
+      rect:
+        serializedVersion: 2
+        x: 2500
+        y: 2503
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e841a910ab673ceb0800000000000000
+      internalID: -4700783044781796210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_4
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 1682
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b170b01d50574120800000000000000
+      internalID: 2397973687240257976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_5
+      rect:
+        serializedVersion: 2
+        x: 854
+        y: 1682
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 720f90e65fbab6c10800000000000000
+      internalID: 2047919526171504679
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_6
+      rect:
+        serializedVersion: 2
+        x: 1680
+        y: 1681
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c0909cfbd649c110800000000000000
+      internalID: 1281633479612731593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_7
+      rect:
+        serializedVersion: 2
+        x: 2502
+        y: 1684
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c66b740c8ae2abd90800000000000000
+      internalID: -7081296161771374996
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_8
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 860
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a8612094e846b170800000000000000
+      internalID: 8193816718555048105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_9
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 860
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4f3890ccb0213ae0800000000000000
+      internalID: -1571438799918448817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_10
+      rect:
+        serializedVersion: 2
+        x: 1678
+        y: 860
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcad616be5da644f0800000000000000
+      internalID: -844797257791907125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_11
+      rect:
+        serializedVersion: 2
+        x: 2502
+        y: 858
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb31f2b0d795da140800000000000000
+      internalID: 4732537177029678011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_12
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 39
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 223353eac8fa53e00800000000000000
+      internalID: 1023917509049660194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_13
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 36
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b8a3c13625c13010800000000000000
+      internalID: 1166930546300004532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: passive_rare_14
+      rect:
+        serializedVersion: 2
+        x: 1680
+        y: 37
+        width: 744
+        height: 744
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7714a2aef578a8a0800000000000000
+      internalID: -6293650742739462278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 086dd18e324b5794d96c8301c79925db
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      passive_rare_0: -4540687045677255197
+      passive_rare_1: -1292745665934145057
+      passive_rare_10: -844797257791907125
+      passive_rare_11: 4732537177029678011
+      passive_rare_12: 1023917509049660194
+      passive_rare_13: 1166930546300004532
+      passive_rare_14: -6293650742739462278
+      passive_rare_2: -4886549215988293648
+      passive_rare_3: -4700783044781796210
+      passive_rare_4: 2397973687240257976
+      passive_rare_5: 2047919526171504679
+      passive_rare_6: 1281633479612731593
+      passive_rare_7: -7081296161771374996
+      passive_rare_8: 8193816718555048105
+      passive_rare_9: -1571438799918448817
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

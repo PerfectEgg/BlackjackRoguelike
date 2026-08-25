@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "DRINK ME \uC74C\uB8CC"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "DRINK ME \uC74C\uB8CC"
-  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  Icon: {fileID: -8469076537520593511, guid: 2cc790e4d209c4d45b08a74102c7ea8f, type: 3}
   Description: "\uC774\uBC88 \uB77C\uC6B4\uB4DC \uACF5\uACA9\uB825 \uACC4\uC218 +1"
   ItemType: 1
   Rarity: 0

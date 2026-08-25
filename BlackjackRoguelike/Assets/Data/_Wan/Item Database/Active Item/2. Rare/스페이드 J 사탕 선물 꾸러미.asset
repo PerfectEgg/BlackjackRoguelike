@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
+  m_Name: "\uC2A4\uD398\uC774\uB4DC J \uC0AC\uD0D5 \uC120\uBB3C \uAFB8\uB7EC\uBBF8"
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  ItemName: "\uC2A4\uD398\uC774\uB4DC J \uC0AC\uD0D5 \uC120\uBB3C \uAFB8\uB7EC\uBBF8"
+  Icon: {fileID: 5156229545747814895, guid: 75d60744b84075145b0b19267205635f, type: 3}
+  Description: "\uB2E4\uC74C \uB4DC\uB85C\uC6B0 \uC2DC \uC2A4\uD398\uC774\uB4DC J
+    \uD655\uC815 \uD68D\uB4DD"
+  ItemType: 1
+  Rarity: 1
+  Effects:
+  - Category: 10
+    Operation: 5
+    Trigger: 7
+    Target: 0
+    ActiveAction: 0
+    Condition: 0
+    ConditionTarget: 0
+    ConditionValue: 0
+    CardConditionMode: 0
+    CardConditionTarget: 0
+    RequiredCardRank: 0
+    RequiredCardSuit: 0
+    RequiredCardCount: 0
+    IntValue: 0
+    FloatValue: 0
+    ValueSource: 0
+    SecondaryFloatValue: 0
+    DurationScope: 0
+    Duration: 0
+    CardManipulationScope: 0
+    CardManipulationMode: 0
+    CardManipulationCount: 0
+    UsageLimit: 0
+    ExclusiveGroup: 0
+    DrawScope: 1
+    DrawTarget: 1
+    DrawMode: 1
+    DrawCardRank: 11
+    DrawCardSuit: 4

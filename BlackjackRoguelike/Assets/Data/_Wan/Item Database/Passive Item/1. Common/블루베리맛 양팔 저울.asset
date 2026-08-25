@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\uBE14\uB8E8\uBCA0\uB9AC\uB9DB \uC591\uD314 \uC800\uC6B8"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "\uBE14\uB8E8\uBCA0\uB9AC\uB9DB \uC591\uD314 \uC800\uC6B8"
-  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  Icon: {fileID: 1862459699156493388, guid: 70a58bbf3d6af7548b8d05f7eb15f8cc, type: 3}
   Description: "\uBB34\uC2B9\uBD80 \uC2DC \uB2E4\uC74C \uB77C\uC6B4\uB4DC \uACF5\uACA9\uB825
     \uACC4\uC218 +0.5"
   ItemType: 0
@@ -22,6 +22,8 @@ MonoBehaviour:
   - Category: 1
     Operation: 1
     Trigger: 4
+    Target: 0
+    ActiveAction: 0
     Condition: 3
     ConditionTarget: 0
     ConditionValue: 0

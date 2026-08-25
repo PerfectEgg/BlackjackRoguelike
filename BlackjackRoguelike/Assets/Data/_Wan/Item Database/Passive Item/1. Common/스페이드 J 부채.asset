@@ -10,41 +10,41 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: deae7d1542a7a8140ba3cde61fc56d13, type: 3}
-  m_Name: "\uC2A4\uD398\uC774\uB4DC J \uC0AC\uD0D5 \uC120\uBB3C \uAFB8\uB7EC\uBBF8"
+  m_Name: "\uC2A4\uD398\uC774\uB4DC J \uBD80\uCC44"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  ItemName: "\uC2A4\uD398\uC774\uB4DC J \uC0AC\uD0D5 \uC120\uBB3C \uAFB8\uB7EC\uBBF8"
-  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
-  Description: "\uB2E4\uC74C \uB4DC\uB85C\uC6B0 \uC2DC \uC2A4\uD398\uC774\uB4DC J
-    \uD655\uC815 \uD68D\uB4DD"
-  ItemType: 1
-  Rarity: 1
+  ItemName: "\uC2A4\uD398\uC774\uB4DC J \uBD80\uCC44"
+  Icon: {fileID: 6992692672091904813, guid: 70a58bbf3d6af7548b8d05f7eb15f8cc, type: 3}
+  Description: "\uC2A4\uD398\uC774\uB4DC J \uBCF4\uC720 \uC2DC \uACF5\uACA9\uB825
+    \uACC4\uC218 +1.5 \uCD94\uAC00"
+  ItemType: 0
+  Rarity: 0
   Effects:
-  - Category: 10
-    Operation: 5
-    Trigger: 7
+  - Category: 1
+    Operation: 1
+    Trigger: 3
     Target: 0
     ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
-    CardConditionMode: 0
-    CardConditionTarget: 0
-    RequiredCardRank: 0
-    RequiredCardSuit: 0
-    RequiredCardCount: 0
+    CardConditionMode: 3
+    CardConditionTarget: 1
+    RequiredCardRank: 11
+    RequiredCardSuit: 4
+    RequiredCardCount: 1
     IntValue: 0
-    FloatValue: 0
+    FloatValue: 1.5
     ValueSource: 0
     SecondaryFloatValue: 0
-    DurationScope: 0
-    Duration: 0
+    DurationScope: 2
+    Duration: 1
     CardManipulationScope: 0
     CardManipulationMode: 0
     CardManipulationCount: 0
     UsageLimit: 0
     ExclusiveGroup: 0
-    DrawScope: 1
-    DrawTarget: 1
-    DrawMode: 1
-    DrawCardRank: 11
-    DrawCardSuit: 4
+    DrawScope: 0
+    DrawTarget: 0
+    DrawMode: 0
+    DrawCardRank: 0
+    DrawCardSuit: 0

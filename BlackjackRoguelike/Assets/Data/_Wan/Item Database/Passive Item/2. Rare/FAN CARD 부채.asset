@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "FAN CARD \uBD80\uCC44"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "FAN CARD \uBD80\uCC44"
-  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  Icon: {fileID: 1166930546300004532, guid: f4989e62ea6fba34b9c4818bcc1d796b, type: 3}
   Description: "\uD604\uC7AC \uBCF4\uC720\uD55C \uCE74\uB4DC \uC22B\uC790\uB9CC\uD07C
     \uACF5\uACA9\uB825 \uACC4\uC218 +0.1"
   ItemType: 0
@@ -22,6 +22,8 @@ MonoBehaviour:
   - Category: 1
     Operation: 1
     Trigger: 3
+    Target: 0
+    ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0

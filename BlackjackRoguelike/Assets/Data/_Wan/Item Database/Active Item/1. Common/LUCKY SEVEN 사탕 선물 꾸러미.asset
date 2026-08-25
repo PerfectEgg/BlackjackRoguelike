@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "LUCKY SEVEN \uC0AC\uD0D5 \uC120\uBB3C \uAFB8\uB7EC\uBBF8"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "LUCKY SEVEN \uC0AC\uD0D5 \uC120\uBB3C \uAFB8\uB7EC\uBBF8"
-  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  Icon: {fileID: -8839104231097342197, guid: 2cc790e4d209c4d45b08a74102c7ea8f, type: 3}
   Description: "\uB2E4\uC74C \uB4DC\uB85C\uC6B0 \uC2DC 7 \uD655\uC815 \uD68D\uB4DD"
   ItemType: 1
   Rarity: 0

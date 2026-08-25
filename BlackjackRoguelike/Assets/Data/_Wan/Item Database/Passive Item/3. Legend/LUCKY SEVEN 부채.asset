@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: "LUCKY SEVEN \uBD80\uCC44"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "LUCKY SEVEN \uBD80\uCC44"
-  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  Description: "7 \uCE74\uB4DC\uAC00 3\uC7A5 \uC774\uC0C1\uC77C \uC2DC \uACF5\uACA9\uB825
+  Icon: {fileID: 468632869426025073, guid: c39eb20ee3e3adc4aaaf2e76ae43b4ca, type: 3}
+  Description: "7 \uCE74\uB4DC\uAC00 2\uC7A5 \uC774\uC0C1\uC77C \uC2DC \uACF5\uACA9\uB825
     \uACC4\uC218 x1.77 "
   ItemType: 0
   Rarity: 2
@@ -22,6 +22,8 @@ MonoBehaviour:
   - Category: 1
     Operation: 2
     Trigger: 3
+    Target: 0
+    ActiveAction: 0
     Condition: 0
     ConditionTarget: 0
     ConditionValue: 0
@@ -29,7 +31,7 @@ MonoBehaviour:
     CardConditionTarget: 1
     RequiredCardRank: 7
     RequiredCardSuit: 0
-    RequiredCardCount: 3
+    RequiredCardCount: 2
     IntValue: 0
     FloatValue: 1.77
     ValueSource: 0

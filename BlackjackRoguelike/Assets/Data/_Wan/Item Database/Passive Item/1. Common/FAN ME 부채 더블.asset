@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "FAN ME \uBD80\uCC44 \uB354\uBE14"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "FAN ME \uBD80\uCC44 \uB354\uBE14"
-  Icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  Icon: {fileID: -8927250563060805572, guid: 70a58bbf3d6af7548b8d05f7eb15f8cc, type: 3}
   Description: "\uB354\uBE14 \uB2E4\uC6B4 \uC2DC \uACF5\uACA9\uB825 \uACC4\uC218
     +0.5"
   ItemType: 0
@@ -22,6 +22,8 @@ MonoBehaviour:
   - Category: 1
     Operation: 1
     Trigger: 4
+    Target: 0
+    ActiveAction: 0
     Condition: 5
     ConditionTarget: 1
     ConditionValue: 0

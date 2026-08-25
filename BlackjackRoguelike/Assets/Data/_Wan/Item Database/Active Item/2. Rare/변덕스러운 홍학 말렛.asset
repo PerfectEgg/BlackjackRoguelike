@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\uBCC0\uB355\uC2A4\uB7EC\uC6B4 \uD64D\uD559 \uB9D0\uB81B"
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   ItemName: "\uBCC0\uB355\uC2A4\uB7EC\uC6B4 \uD64D\uD559 \uB9D0\uB81B"
-  Icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  Icon: {fileID: 136186473152002625, guid: 75d60744b84075145b0b19267205635f, type: 3}
   Description: "\uB2E4\uC74C \uB77C\uC6B4\uB4DC\uC5D0 \uBB34\uC870\uAC74 \uD328 2\uC7A5
     \uBF51\uAE30, \uB2E8 \uC774\uBC88 \uB77C\uC6B4\uB4DC \uACF5\uACA9\uB825 \uACC4\uC218
     +3"
