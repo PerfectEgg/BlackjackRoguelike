@@ -9,6 +9,8 @@ using UnityEngine.UI;
 /// <summary>Inspector에 연결한 UI 항목으로 블랙잭 전투, 인벤토리, 보상을 표시하는 시스템입니다.</summary>
 public sealed class BlackjackSystem : MonoBehaviour
 {
+    private const string TutorialViewedPlayerPrefsKey = "BlackjackRoguelike.TutorialViewed";
+
     [Header("게임 데이터")]
     [SerializeField] private MonsterDatabase _monsterDatabase;
     [SerializeField] private ItemDatabase _itemDatabase;
@@ -60,10 +62,16 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private Button _pauseRestartButton;
     [Tooltip("로비 씬으로 돌아가는 버튼입니다.")]
     [SerializeField] private Button _pauseLobbyButton;
+    [Tooltip("일시 정지 화면에서 튜토리얼을 다시 여는 버튼입니다.")]
+    [SerializeField] private Button _pauseTutorialButton;
     [Tooltip("재시작할 게임 씬 이름입니다.")]
     [SerializeField] private string _gameSceneName = "2_Game";
     [Tooltip("돌아갈 로비 씬 이름입니다.")]
     [SerializeField] private string _lobbySceneName = "1_Lobby";
+
+    [Header("튜토리얼 UI")]
+    [Tooltip("게임 최초 1회 자동으로 표시하고, 일시 정지 화면에서 다시 열 수 있는 도움말 처리기입니다.")]
+    [SerializeField] private TutorialController _tutorialController;
 
     [Header("자동 진행 타이밍")]
     [Min(0f)] [SerializeField] private float _openingCardInterval = 0.2f;
@@ -131,6 +139,8 @@ public sealed class BlackjackSystem : MonoBehaviour
 
     [Header("보상 UI")]
     [SerializeField] private GameObject _rewardPanel;
+    [Tooltip("몬스터 처치로 얻은 최종 골드 획득량을 표시할 TMP Text입니다.")]
+    [SerializeField] private TMP_Text _rewardGoldText;
     [Tooltip("패시브 보상 아이콘을 넣을 슬롯입니다. 후보 순서대로 연결합니다.")]
     [SerializeField] private Transform[] _passiveRewardSlots;
     [Tooltip("액티브 보상 아이콘을 넣을 슬롯입니다. 후보 순서대로 연결합니다.")]
@@ -185,6 +195,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     private bool _isGameClearQueued;
     private bool _isShowingMatchResult;
     private bool _isPaused;
+    private bool _isTutorialOpen;
+    private bool _isAutomaticTutorial;
     private string _matchResultText;
     private float _displayedDealerHp = -1f;
     private float _displayedPlayerHp = -1f;
@@ -208,6 +220,11 @@ public sealed class BlackjackSystem : MonoBehaviour
         PreparePlayerHitEffects();
         if (_inventoryPanel != null) _inventoryPanel.SetActive(false);
         if (_pausePanel != null) _pausePanel.SetActive(false);
+        if (_tutorialController != null)
+        {
+            _tutorialController.Closed += OnTutorialClosed;
+            _tutorialController.HideImmediately();
+        }
         SetModalBackdropVisible(false);
         Time.timeScale = 1f;
         CreateItemDescriptionView();
@@ -219,13 +236,18 @@ public sealed class BlackjackSystem : MonoBehaviour
         else _game.StartMatch();
 
         RefreshBattleUi();
+        ShowTutorialOnFirstPlay();
     }
 
     // Esc로 일시 정지 패널을 토글하고, 정지 중에는 디버그 입력을 막습니다.
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) TogglePausePanel();
-        if (_isPaused) return;
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (_isTutorialOpen) return;
+            TogglePausePanel();
+        }
+        if (_isPaused || _isTutorialOpen) return;
         if (Input.GetKeyDown(KeyCode.B)) _game.ForceNextPlayerOpeningBlackjack();
     }
 
@@ -264,6 +286,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_pauseResumeButton != null) _pauseResumeButton.onClick.AddListener(ResumeGame);
         if (_pauseRestartButton != null) _pauseRestartButton.onClick.AddListener(RestartGame);
         if (_pauseLobbyButton != null) _pauseLobbyButton.onClick.AddListener(ReturnToLobby);
+        if (_pauseTutorialButton != null) _pauseTutorialButton.onClick.AddListener(OpenTutorialFromPause);
         if (_muteButton != null) _muteButton.onClick.AddListener(ToggleMute);
 
         BindButtonSound(_hitButton);
@@ -280,6 +303,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         BindButtonSound(_pauseResumeButton);
         BindButtonSound(_pauseRestartButton);
         BindButtonSound(_pauseLobbyButton);
+        BindButtonSound(_pauseTutorialButton);
         BindButtonSound(_muteButton);
 
     }
@@ -350,6 +374,58 @@ public sealed class BlackjackSystem : MonoBehaviour
         Time.timeScale = 1f;
         if (_pausePanel != null) _pausePanel.SetActive(false);
         RefreshModalBackdrop();
+    }
+
+    // 웹 빌드의 최초 플레이일 때만 자동 도움말을 열고, 닫을 때 재생 기록을 저장합니다.
+    private void ShowTutorialOnFirstPlay()
+    {
+        if (!Application.isEditor && PlayerPrefs.GetInt(TutorialViewedPlayerPrefsKey, 0) != 0) return;
+        if (_tutorialController == null || !_tutorialController.HasPages) return;
+
+        _isAutomaticTutorial = true;
+        OpenTutorial();
+    }
+
+    // 일시 정지 패널의 도움말 버튼으로 언제든 튜토리얼을 다시 엽니다.
+    private void OpenTutorialFromPause()
+    {
+        if (!_isPaused) return;
+        _isAutomaticTutorial = false;
+        OpenTutorial();
+    }
+
+    // 전투 시간을 멈춘 상태에서 튜토리얼 패널을 최상단에 표시합니다.
+    private void OpenTutorial()
+    {
+        if (_tutorialController == null || !_tutorialController.HasPages || _isTutorialOpen) return;
+        _isTutorialOpen = true;
+        _itemDescriptionView?.Hide();
+        Time.timeScale = 0f;
+        _tutorialController.Open();
+    }
+
+    // 튜토리얼을 닫은 뒤 자동 재생 기록을 저장하고, 일시 정지가 아니면 시간을 재개합니다.
+    private void OnTutorialClosed()
+    {
+        if (_isAutomaticTutorial)
+        {
+            PlayerPrefs.SetInt(TutorialViewedPlayerPrefsKey, 1);
+            PlayerPrefs.Save();
+        }
+
+        _isTutorialOpen = false;
+        _isAutomaticTutorial = false;
+        if (_isPaused) return;
+
+        Time.timeScale = 1f;
+    }
+
+    // 테스트용으로 최초 튜토리얼 재생 기록을 삭제합니다.
+    [ContextMenu("튜토리얼 최초 재생 기록 초기화")]
+    private void ResetTutorialViewedState()
+    {
+        PlayerPrefs.DeleteKey(TutorialViewedPlayerPrefsKey);
+        PlayerPrefs.Save();
     }
 
     // 현재 게임 씬을 다시 불러와 모든 런타임 전투 상태를 초기화합니다.
@@ -851,6 +927,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         if (_inventoryPanel != null && _inventoryPanel.activeSelf) _inventoryPanel.SetActive(false);
         _itemDescriptionView?.Hide();
+        if (_rewardGoldText != null) _rewardGoldText.text = _game.LastMonsterGoldReward > 0 ? $"+{_game.LastMonsterGoldReward} Gold" : string.Empty;
         _pendingReward = itemDrops;
         _selectedPassiveRewardIndexes.Clear();
         _selectedActiveRewardIndexes.Clear();
@@ -1033,6 +1110,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void TryBuyShopOffer(int index)
     {
         if (!_game.TryBuyShopOffer(index)) return;
+        PlaySound(SoundCue.ShopPurchase);
         RefreshInventoryUi();
         RefreshShopUi();
     }
@@ -1567,6 +1645,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         Time.timeScale = 1f;
         if (_soundController != null) _soundController.MuteChanged -= RefreshMuteIcon;
+        if (_tutorialController != null) _tutorialController.Closed -= OnTutorialClosed;
         if (_game == null) return;
         _game.Match.CardDrawn -= OnCardDrawn;
         _game.Match.StateChanged -= OnMatchStateChanged;

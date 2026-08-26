@@ -30,7 +30,8 @@ public sealed class ItemDescriptionView : MonoBehaviour
     {
         if (itemDefinition == null) return;
         string _colorCode = ColorUtility.ToHtmlStringRGB(GetRarityNameColor(itemDefinition.Rarity));
-        Show(itemDefinition.ItemName, $"[{GetRarityName(itemDefinition.Rarity)}]\n\n{itemDefinition.Description}", _colorCode, screenPosition);
+        string _title = $"{itemDefinition.ItemName} [{GetRarityName(itemDefinition.Rarity)}]";
+        Show(_title, itemDefinition.Description, _colorCode, screenPosition);
     }
 
     // 몬스터 이름·설명·특성을 아이템 설명창과 같은 위치 규칙으로 표시합니다.

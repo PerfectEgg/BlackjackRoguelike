@@ -167,6 +167,7 @@ public sealed class SceneTransitionController : MonoBehaviour
             _controller.SetLoadingVisible(false);
             Scene _targetScene = SceneManager.GetSceneByName(targetSceneName);
             SceneManager.SetActiveScene(_targetScene);
+            SoundController.Instance?.PlayInitialSceneBgm(targetSceneName);
 
             yield return _controller.AnimateCurtains(1f, 0f, _controller._openDuration);
             if (_conversionScene.IsValid() && _conversionScene.isLoaded) SceneManager.UnloadSceneAsync(_conversionScene);

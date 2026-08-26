@@ -32,6 +32,7 @@ public enum SoundCue
     InventoryToggle,
     ShopExit,
     ShopRefresh,
+    ShopPurchase,
     RewardSelect,
     RewardCancel
 }
@@ -78,6 +79,7 @@ public sealed class SoundLibrary : ScriptableObject
     public SoundEntry InventoryToggle = new();
     public SoundEntry ShopExit = new();
     public SoundEntry ShopRefresh = new();
+    public SoundEntry ShopPurchase = new();
     public SoundEntry RewardSelect = new();
     public SoundEntry RewardCancel = new();
     public SoundEntry ItemUse = new();
@@ -119,6 +121,7 @@ public sealed class SoundLibrary : ScriptableObject
             SoundCue.InventoryToggle => InventoryToggle,
             SoundCue.ShopExit => ShopExit,
             SoundCue.ShopRefresh => ShopRefresh,
+            SoundCue.ShopPurchase => ShopPurchase,
             SoundCue.RewardSelect => RewardSelect,
             SoundCue.RewardCancel => RewardCancel,
             SoundCue.ItemUse => ItemUse,

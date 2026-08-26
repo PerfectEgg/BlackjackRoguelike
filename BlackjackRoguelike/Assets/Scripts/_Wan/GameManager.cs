@@ -34,6 +34,7 @@ public sealed class GameManager
     public int CurrentStage { get; private set; }
     // 플레이어가 보유한 골드입니다.
     public int Gold { get; private set; }
+    public int LastMonsterGoldReward { get; private set; }
     // 몬스터 처치 보상에만 적용되는 골드 획득 배율입니다.
     public float MonsterGoldDropMultiplier { get; private set; } = 1f;
     // 현재 런에서 사용하는 10스테이지 몬스터 데이터베이스입니다.
@@ -663,6 +664,7 @@ public sealed class GameManager
     private void AwardMonsterGold(int baseGold)
     {
         int _adjustedGold = (int)MathF.Floor(baseGold * MonsterGoldDropMultiplier);
+        LastMonsterGoldReward = Math.Max(0, _adjustedGold);
         GainGold(_adjustedGold);
     }
 

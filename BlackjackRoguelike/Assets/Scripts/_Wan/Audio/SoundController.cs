@@ -14,6 +14,7 @@ public sealed class SoundController : MonoBehaviour
     [SerializeField] private AudioSource _bgmSource;
     [SerializeField] private AudioSource _sfxSource;
     [SerializeField] private string _lobbySceneName = "1_Lobby";
+    [SerializeField] private string _gameSceneName = "2_Game";
     [SerializeField] private string _gameOverSceneName = "3_GameOver";
     [SerializeField] private string _gameClearSceneName = "4_GameClear";
 
@@ -110,6 +111,12 @@ public sealed class SoundController : MonoBehaviour
         PlayBgm(SoundBgmTrack.Shop);
     }
 
+    // 씬 전환 직후 대상 씬의 초기 BGM을 명시적으로 적용합니다.
+    public void PlayInitialSceneBgm(string sceneName)
+    {
+        PlaySceneBgm(sceneName);
+    }
+
     // 선택한 BGM 항목을 반복 재생하도록 현재 라이브러리 설정을 반영합니다.
     public void PlayBgm(SoundBgmTrack track)
     {
@@ -135,6 +142,7 @@ public sealed class SoundController : MonoBehaviour
     private void PlaySceneBgm(string sceneName)
     {
         if (sceneName == _lobbySceneName) PlayBgm(SoundBgmTrack.Lobby);
+        else if (sceneName == _gameSceneName) PlayStageBgm(1);
         else if (sceneName == _gameOverSceneName) PlayBgm(SoundBgmTrack.GameOver);
         else if (sceneName == _gameClearSceneName) PlayBgm(SoundBgmTrack.GameClear);
     }
