@@ -84,7 +84,7 @@ MonoBehaviour:
     RandomPitchRange: 0
   BlackjackHit:
     Clip: {fileID: 8300000, guid: 21d3619d6941b4a4795ae4f3eed3ea49, type: 3}
-    Volume: 0.5
+    Volume: 0.3
     Pitch: 1
     RandomPitchRange: 0
   NormalDamage:
@@ -128,8 +128,8 @@ MonoBehaviour:
     Pitch: 1
     RandomPitchRange: 0
   ShopPurchase:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: c9a65cb4fcbf1c544a53ea18365b886c, type: 3}
+    Volume: 0.7
     Pitch: 1
     RandomPitchRange: 0
   RewardSelect:
