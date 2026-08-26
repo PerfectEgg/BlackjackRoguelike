@@ -16,9 +16,9 @@ MonoBehaviour:
   MonsterName: "\uD2B8\uB7FC\uD504 \uC6A9\uBCD1"
   Description: "\uC2E4\uC218\uB85C \uC2EC\uC740 \uD558\uC580 \uC7A5\uBBF8\uB97C \uBE68\uAC04
     \uC7A5\uBBF8\uB85C \uCE60\uD558\uACE0 \uC788\uC74C"
-  IdleSprite: {fileID: -3649708058849057566, guid: 7f6d342acee6b1b4c9f75c36183b5525, type: 3}
-  AttackSprite: {fileID: 4462003476189756925, guid: f9022d4ca87d6024ea4305b780fab8d1, type: 3}
-  HitSprite: {fileID: 6898461486438639766, guid: ad661333b8b733943b5f466226584588, type: 3}
+  IdleSprite: {fileID: 21300000, guid: 7f6d342acee6b1b4c9f75c36183b5525, type: 3}
+  AttackSprite: {fileID: 21300000, guid: f9022d4ca87d6024ea4305b780fab8d1, type: 3}
+  HitSprite: {fileID: 21300000, guid: ad661333b8b733943b5f466226584588, type: 3}
   MaxHp: 300
   AttackMultiplier: 1.75
   DropGold: 350
