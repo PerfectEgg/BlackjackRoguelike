@@ -18,7 +18,7 @@ public sealed class LobbyManager : MonoBehaviour
     // 버튼 이벤트와 음소거 상태 변경 이벤트를 연결합니다.
     private void Start()
     {
-        if (_soundController == null) _soundController = SoundController.Instance;
+        if (SoundController.Instance != null) _soundController = SoundController.Instance;
         if (_gameStartButton != null) _gameStartButton.onClick.AddListener(StartGame);
         if (_muteButton != null) _muteButton.onClick.AddListener(ToggleMute);
         if (_soundController != null)

@@ -1,10 +1,61 @@
 fileFormatVersion: 2
-guid: e0bac6819b8782545b6ffc9a306b0c6d
+guid: 76da23f5744747542867e731c1d8000a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6052537868968665468
-    second: TransitionCurtain_Rod_3x4_v1_0
+      213: -6081896338223173334
+    second: ShopExitButton_v1_0
+  - first:
+      213: 2605183271258932560
+    second: ShopExitButton_v1_1
+  - first:
+      213: 1481915507518993027
+    second: ShopExitButton_v1_2
+  - first:
+      213: -3939194334944906251
+    second: ShopExitButton_v1_3
+  - first:
+      213: 649388925322392217
+    second: ShopExitButton_v1_4
+  - first:
+      213: -6945712901960353869
+    second: ShopExitButton_v1_5
+  - first:
+      213: -1343104219578423798
+    second: ShopExitButton_v1_6
+  - first:
+      213: -1393526949208484677
+    second: ShopExitButton_v1_7
+  - first:
+      213: -6950411276824420601
+    second: ShopExitButton_v1_8
+  - first:
+      213: -739557429488352159
+    second: ShopExitButton_v1_9
+  - first:
+      213: -3270670136394029942
+    second: ShopExitButton_v1_10
+  - first:
+      213: -6317626791840947089
+    second: ShopExitButton_v1_11
+  - first:
+      213: -8474563741565367521
+    second: ShopExitButton_v1_12
+  - first:
+      213: -8068927769568851834
+    second: ShopExitButton_v1_13
+  - first:
+      213: -9041303006661806279
+    second: ShopExitButton_v1_14
+  - first:
+      213: 3924218812362573275
+    second: ShopExitButton_v1_15
+  - first:
+      213: 8009234700406718953
+    second: ShopExitButton_v1_16
+  - first:
+      213: -7139967755806314393
+    second: ShopExitButton_v1_17
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +88,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -51,7 +102,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -126,23 +177,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TransitionCurtain_Rod_3x4_v1_0
+      name: ShopExitButton_v1_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1086
-        height: 1448
+        x: 27
+        y: 136
+        width: 2118
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 48ed58a30e0110ca0800000000000000
-      internalID: -6052537868968665468
+      spriteID: a21757fe083c89ba0800000000000000
+      internalID: -6081896338223173334
       vertices: []
       indices: 
       edges: []
@@ -151,8 +202,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
-    internalID: 0
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -161,7 +212,24 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TransitionCurtain_Rod_3x4_v1_0: -6052537868968665468
+      ShopExitButton_v1_0: -6081896338223173334
+      ShopExitButton_v1_1: 2605183271258932560
+      ShopExitButton_v1_10: -3270670136394029942
+      ShopExitButton_v1_11: -6317626791840947089
+      ShopExitButton_v1_12: -8474563741565367521
+      ShopExitButton_v1_13: -8068927769568851834
+      ShopExitButton_v1_14: -9041303006661806279
+      ShopExitButton_v1_15: 3924218812362573275
+      ShopExitButton_v1_16: 8009234700406718953
+      ShopExitButton_v1_17: -7139967755806314393
+      ShopExitButton_v1_2: 1481915507518993027
+      ShopExitButton_v1_3: -3939194334944906251
+      ShopExitButton_v1_4: 649388925322392217
+      ShopExitButton_v1_5: -6945712901960353869
+      ShopExitButton_v1_6: -1343104219578423798
+      ShopExitButton_v1_7: -1393526949208484677
+      ShopExitButton_v1_8: -6950411276824420601
+      ShopExitButton_v1_9: -739557429488352159
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

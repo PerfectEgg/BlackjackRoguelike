@@ -39,6 +39,7 @@ public sealed class SoundController : MonoBehaviour
     // 씬 진입 시 로비·게임오버·클리어 BGM을 자동으로 전환합니다.
     private void OnEnable()
     {
+        if (Instance != null && Instance != this) return;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlaySceneBgm(SceneManager.GetActiveScene().name);
     }
@@ -46,6 +47,7 @@ public sealed class SoundController : MonoBehaviour
     // 씬 이벤트 구독을 해제합니다.
     private void OnDisable()
     {
+        if (Instance != this) return;
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
@@ -58,7 +60,7 @@ public sealed class SoundController : MonoBehaviour
     // 지정한 효과음을 한 번 재생합니다. 비어 있는 클립은 조용히 무시합니다.
     public void Play(SoundCue cue)
     {
-        if (_sfxSource == null) return;
+        if (!CanPlayAudioSource(_sfxSource)) return;
 
         SoundEntry _entry = _soundLibrary?.GetSfxEntry(cue);
         if (_entry == null || _entry.Clip == null) return;
@@ -117,10 +119,17 @@ public sealed class SoundController : MonoBehaviour
         PlaySceneBgm(sceneName);
     }
 
+    // AudioListener가 없는 전환 공백에서 경고가 나지 않도록 재생 중인 모든 사운드를 멈춥니다.
+    public void StopPlaybackForSceneTransition()
+    {
+        if (_bgmSource != null) _bgmSource.Stop();
+        if (_sfxSource != null) _sfxSource.Stop();
+    }
+
     // 선택한 BGM 항목을 반복 재생하도록 현재 라이브러리 설정을 반영합니다.
     public void PlayBgm(SoundBgmTrack track)
     {
-        if (_bgmSource == null) return;
+        if (!CanPlayAudioSource(_bgmSource)) return;
         SoundEntry _entry = _soundLibrary?.GetBgmEntry(track);
         if (_entry == null || _entry.Clip == null) return;
         if (_bgmSource.clip == _entry.Clip && _bgmSource.isPlaying) return;
@@ -130,6 +139,14 @@ public sealed class SoundController : MonoBehaviour
         _bgmSource.pitch = _entry.Pitch;
         _bgmSource.loop = true;
         _bgmSource.Play();
+    }
+
+    // 씬 전환 중에는 AudioListener가 잠시 없을 수 있으므로, 준비된 경우에만 재생을 시도합니다.
+    private bool CanPlayAudioSource(AudioSource audioSource)
+    {
+        return audioSource != null &&
+               audioSource.isActiveAndEnabled &&
+               FindAnyObjectByType<AudioListener>() != null;
     }
 
     // 씬 이름으로 자동 전환 가능한 BGM만 처리합니다. 전투 스테이지 BGM은 BlackjackSystem이 지정합니다.

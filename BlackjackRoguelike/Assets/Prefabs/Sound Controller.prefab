@@ -50,6 +50,7 @@ MonoBehaviour:
   _bgmSource: {fileID: 995458293557163785}
   _sfxSource: {fileID: 5837927573708094544}
   _lobbySceneName: 1_Lobby
+  _gameSceneName: 2_Game
   _gameOverSceneName: 3_GameOver
   _gameClearSceneName: 4_GameClear
 --- !u!82 &995458293557163785

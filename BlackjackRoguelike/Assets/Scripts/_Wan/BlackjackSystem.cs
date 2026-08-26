@@ -204,7 +204,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 게임 매니저와 UI 버튼을 준비하고, 데이터베이스가 있으면 1스테이지 런을 시작합니다.
     private void Start()
     {
-        if (_soundController == null) _soundController = SoundController.Instance;
+        if (SoundController.Instance != null) _soundController = SoundController.Instance;
         if (_soundController != null)
         {
             _soundController.MuteChanged += RefreshMuteIcon;
@@ -317,12 +317,14 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 사운드 컨트롤러가 연결된 경우에만 지정한 효과음을 재생합니다.
     private void PlaySound(SoundCue cue)
     {
+        if (SoundController.Instance != null) _soundController = SoundController.Instance;
         if (_soundController != null) _soundController.Play(cue);
     }
 
     // 공용 사운드 컨트롤러의 음소거 상태를 전환합니다.
     private void ToggleMute()
     {
+        if (SoundController.Instance != null) _soundController = SoundController.Instance;
         if (_soundController != null) _soundController.ToggleMute();
     }
 

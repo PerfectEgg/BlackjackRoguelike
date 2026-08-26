@@ -150,6 +150,7 @@ public sealed class SceneTransitionController : MonoBehaviour
 
             // 목적지 씬을 Additive로 열기 전에 이전 씬을 내립니다.
             // 각 일반 씬이 EventSystem을 하나씩 가지므로, 전환 중 중복 EventSystem 경고를 막습니다.
+            SoundController.Instance?.StopPlaybackForSceneTransition();
             if (_sourceScene.IsValid() && _sourceScene.isLoaded)
             {
                 AsyncOperation _unloadSource = SceneManager.UnloadSceneAsync(_sourceScene);
