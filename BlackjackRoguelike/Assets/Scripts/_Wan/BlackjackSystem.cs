@@ -13,6 +13,10 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private MonsterDatabase _monsterDatabase;
     [SerializeField] private ItemDatabase _itemDatabase;
     [SerializeField] private SoundController _soundController;
+    [Header("음소거 UI")]
+    [SerializeField] private Button _muteButton;
+    [SerializeField] private Sprite _soundOnIcon;
+    [SerializeField] private Sprite _soundMutedIcon;
     [Tooltip("해당 스테이지 진입 전에 상점을 엽니다. 디버그용으로 2를 넣으면 1스테이지 처치 뒤 상점이 열립니다.")]
     [SerializeField] private int[] _shopVisitStages = { 5, 10 };
 
@@ -165,6 +169,11 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void Start()
     {
         if (_soundController == null) _soundController = SoundController.Instance;
+        if (_soundController != null)
+        {
+            _soundController.MuteChanged += RefreshMuteIcon;
+        }
+        RefreshMuteIcon(_soundController != null && _soundController.IsMuted);
         _game = new GameManager();
         SubscribeGameEvents();
         BindUiButtons();
@@ -228,6 +237,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_pauseResumeButton != null) _pauseResumeButton.onClick.AddListener(ResumeGame);
         if (_pauseRestartButton != null) _pauseRestartButton.onClick.AddListener(RestartGame);
         if (_pauseLobbyButton != null) _pauseLobbyButton.onClick.AddListener(ReturnToLobby);
+        if (_muteButton != null) _muteButton.onClick.AddListener(ToggleMute);
 
         BindButtonSound(_hitButton);
         BindButtonSound(_standButton);
@@ -243,6 +253,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         BindButtonSound(_pauseResumeButton);
         BindButtonSound(_pauseRestartButton);
         BindButtonSound(_pauseLobbyButton);
+        BindButtonSound(_muteButton);
 
     }
 
@@ -256,6 +267,18 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void PlaySound(SoundCue cue)
     {
         if (_soundController != null) _soundController.Play(cue);
+    }
+
+    // 공용 사운드 컨트롤러의 음소거 상태를 전환합니다.
+    private void ToggleMute()
+    {
+        if (_soundController != null) _soundController.ToggleMute();
+    }
+
+    // 현재 음소거 상태에 맞는 아이콘을 전투 UI에 표시합니다.
+    private void RefreshMuteIcon(bool isMuted)
+    {
+        if (_muteButton != null && _muteButton.image != null) _muteButton.image.sprite = isMuted ? _soundMutedIcon : _soundOnIcon;
     }
 
     // 더블 다운이 가능한 경우에만 실행하고 전용 효과음을 재생합니다.
@@ -653,6 +676,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 처치 보상 후보를 Inspector에 연결한 보상 패널에 표시합니다.
     private void ShowRewardPanel(StageItemDropResult itemDrops)
     {
+        if (_inventoryPanel != null && _inventoryPanel.activeSelf) _inventoryPanel.SetActive(false);
+        _itemDescriptionView?.Hide();
         _pendingReward = itemDrops;
         _selectedPassiveRewardIndexes.Clear();
         _selectedActiveRewardIndexes.Clear();
@@ -792,7 +817,7 @@ public sealed class BlackjackSystem : MonoBehaviour
             ShopOffer _offer = _shop.Offers[_index];
             int _currentActiveOfferIndex = _offer.Item.ItemType == ItemType.Active ? _activeOfferIndex++ : -1;
             Transform _parent = GetShopOfferParent(_offer.Item.ItemType, _currentActiveOfferIndex);
-            string _footerText = _offer.IsSold ? "SOLD OUT" : (_game.HasFreeShopPurchaseTicket ? $"{_offer.Price} GOLD | TICKET" : $"{_offer.Price} GOLD");
+            string _footerText = _offer.IsSold ? "SOLD OUT" : (_game.HasFreeShopPurchaseTicket ? $"TICKET" : $"{_offer.Price}");
             ItemIconView _view = CreateItemIcon(_offer.Item, _parent, false, () => TryBuyShopOffer(_offerIndex), _footerText);
             if (_view == null) continue;
             _view.SetInteractable(!_offer.IsSold && (_game.Gold >= _offer.Price || _game.HasFreeShopPurchaseTicket));
@@ -801,7 +826,17 @@ public sealed class BlackjackSystem : MonoBehaviour
         }
 
         if (_shopRefreshCostText != null) _shopRefreshCostText.text = _shop.CurrentRefreshCost.ToString();
-        if (_shopRefreshButton != null) _shopRefreshButton.interactable = _game.Gold >= _shop.CurrentRefreshCost;
+        SetShopRefreshButtonInteractable(_game.Gold >= _shop.CurrentRefreshCost);
+    }
+
+    // 골드 부족으로 새로 고침을 막더라도 버튼 배경은 불투명하게 유지합니다.
+    private void SetShopRefreshButtonInteractable(bool isInteractable)
+    {
+        if (_shopRefreshButton == null) return;
+        ColorBlock _colors = _shopRefreshButton.colors;
+        _colors.disabledColor = new Color(_colors.normalColor.r, _colors.normalColor.g, _colors.normalColor.b, 1f);
+        _shopRefreshButton.colors = _colors;
+        _shopRefreshButton.interactable = isInteractable;
     }
 
     // 패시브는 전용 한 칸, 액티브는 진열 순서의 전용 슬롯을 우선 사용합니다.
@@ -936,7 +971,7 @@ public sealed class BlackjackSystem : MonoBehaviour
                 ? $"{_game.MonsterAbilities.GetVisibleDealerScore(_game.Match.DealerHand)} + ?"
                 : GetScoreText(_game.Match.DealerHand);
         }
-        if (_dealerScoreBonusText != null) _dealerScoreBonusText.text = _hideDealerCards ? string.Empty : GetScoreBonusText(_game.Match.DealerHand.Score, _game.Match.DealerScore);
+        if (_dealerScoreBonusText != null) _dealerScoreBonusText.text = GetDealerBonusText(_hideDealerCards);
         if (_playerScoreText != null) _playerScoreText.text = GetScoreText(_game.Match.PlayerHand);
         if (_playerScoreBonusText != null) _playerScoreBonusText.text = GetScoreBonusText(_game.Match.PlayerHand.Score, _game.Match.PlayerScore);
 
@@ -1210,6 +1245,24 @@ public sealed class BlackjackSystem : MonoBehaviour
         return _bonus > 0 ? $"(+{_bonus})" : $"({_bonus})";
     }
 
+    // 딜러 점수 보정과 선언된 숫자를 하나의 보너스 텍스트 영역에 함께 표시합니다.
+    private string GetDealerBonusText(bool hideDealerCards)
+    {
+        if (_game == null) return string.Empty;
+        StringBuilder _text = new();
+        if (!hideDealerCards) _text.Append(GetScoreBonusText(_game.Match.DealerHand.Score, _game.Match.DealerScore));
+
+        IReadOnlyList<CardRank> _declaredRanks = _game.MonsterAbilities.DeclaredRanks;
+        if (_declaredRanks == null || _declaredRanks.Count == 0) return _text.ToString();
+        if (_text.Length > 0) _text.Append(' ');
+        for (int _index = 0; _index < _declaredRanks.Count; _index++)
+        {
+            if (_index > 0) _text.Append(", ");
+            _text.Append((int)_declaredRanks[_index]);
+        }
+        return _text.ToString();
+    }
+
     // 카드 컨테이너와 진영별 템플릿 설정에 따라 카드 크기와 간격을 배치합니다.
     private void RebuildCards(BlackjackHand hand, RectTransform cardContainer, List<BlackjackCardView> cardViews, BlackjackCardView cardTemplate, float cardWidth, float maximumCardSpacing, bool isDealer = false, bool hideDealerCards = false, bool fanPlayerCards = false)
     {
@@ -1340,6 +1393,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void OnDestroy()
     {
         Time.timeScale = 1f;
+        if (_soundController != null) _soundController.MuteChanged -= RefreshMuteIcon;
         if (_game == null) return;
         _game.Match.CardDrawn -= OnCardDrawn;
         _game.Match.StateChanged -= OnMatchStateChanged;

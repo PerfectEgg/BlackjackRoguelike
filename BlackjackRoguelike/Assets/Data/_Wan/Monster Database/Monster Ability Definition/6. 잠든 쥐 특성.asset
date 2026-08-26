@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4855189c965cf0244b6edd0ebc7c3b78, type: 3}
   m_Name: "6. \uC7A0\uB4E0 \uC950 \uD2B9\uC131"
   m_EditorClassIdentifier: Assembly-CSharp::MonsterAbilityDefinition
-  Description: "\uB77C\uC6B4\uB4DC\uB9C8\uB2E4 \uC22B\uC790\uB97C \uC120\uC5B8, \uD5E4\uB529
-    \uCE74\uB4DC \uB4DC\uB85C\uC6B0 \uC2DC \uC22B\uC790 x 10\uB9CC\uD07C \uD68C\uBCF5 "
+  Description: "\uB77C\uC6B4\uB4DC\uB9C8\uB2E4 \uC22B\uC790\uB97C \uC120\uC5B8, \uD574\uB2F9
+    \uCE74\uB4DC \uB4DC\uB85C\uC6B0 \uC2DC \uC22B\uC790 x 5\uB9CC\uD07C \uD68C\uBCF5 "
   AbilityType: 4
-  Value: 10
+  Value: 5
   FloatValue: 0

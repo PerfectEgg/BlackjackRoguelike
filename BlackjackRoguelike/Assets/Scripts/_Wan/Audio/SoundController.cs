@@ -7,12 +7,18 @@ public sealed class SoundController : MonoBehaviour
 {
     public static SoundController Instance { get; private set; }
 
+    // 음소거 상태가 변경된 뒤 새 상태를 전달합니다.
+    public event System.Action<bool> MuteChanged;
+
     [SerializeField] private SoundLibrary _soundLibrary;
     [SerializeField] private AudioSource _bgmSource;
     [SerializeField] private AudioSource _sfxSource;
     [SerializeField] private string _lobbySceneName = "1_Lobby";
     [SerializeField] private string _gameOverSceneName = "3_GameOver";
     [SerializeField] private string _gameClearSceneName = "4_GameClear";
+
+    // 현재 전체 게임 사운드를 끈 상태인지 나타냅니다.
+    public bool IsMuted { get; private set; }
 
     // 씬 전체에서 하나의 BGM·SFX 재생기만 유지합니다.
     private void Awake()
@@ -25,6 +31,8 @@ public sealed class SoundController : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        IsMuted = PlayerPrefs.GetInt("SoundMuted", 0) == 1;
+        ApplyMuteState();
     }
 
     // 씬 진입 시 로비·게임오버·클리어 BGM을 자동으로 전환합니다.
@@ -55,6 +63,30 @@ public sealed class SoundController : MonoBehaviour
         if (_entry == null || _entry.Clip == null) return;
         _sfxSource.pitch = _entry.Pitch + Random.Range(-_entry.RandomPitchRange, _entry.RandomPitchRange);
         _sfxSource.PlayOneShot(_entry.Clip, _entry.Volume);
+    }
+
+    // 현재 음소거 상태를 반대로 바꾸고 저장합니다.
+    public void ToggleMute()
+    {
+        SetMuted(!IsMuted);
+    }
+
+    // BGM과 효과음 소스에 같은 음소거 상태를 적용하고 UI 구독자에게 알립니다.
+    public void SetMuted(bool isMuted)
+    {
+        if (IsMuted == isMuted) return;
+        IsMuted = isMuted;
+        PlayerPrefs.SetInt("SoundMuted", IsMuted ? 1 : 0);
+        PlayerPrefs.Save();
+        ApplyMuteState();
+        MuteChanged?.Invoke(IsMuted);
+    }
+
+    // 연결한 두 AudioSource의 음소거를 함께 갱신합니다.
+    private void ApplyMuteState()
+    {
+        if (_bgmSource != null) _bgmSource.mute = IsMuted;
+        if (_sfxSource != null) _sfxSource.mute = IsMuted;
     }
 
     // 현재 스테이지 번호에 맞는 전투 BGM을 반복 재생합니다.

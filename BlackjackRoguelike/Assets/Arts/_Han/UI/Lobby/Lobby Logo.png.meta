@@ -1,0 +1,663 @@
+fileFormatVersion: 2
+guid: ded69449d1d6f094dadec5a7bd1f1230
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2801575756389216544
+    second: Lobby Logo_0
+  - first:
+      213: -2678624398715189418
+    second: Lobby Logo_1
+  - first:
+      213: -3154846230472645030
+    second: Lobby Logo_2
+  - first:
+      213: -5546475156370621385
+    second: Lobby Logo_3
+  - first:
+      213: -4844530712878641881
+    second: Lobby Logo_4
+  - first:
+      213: 8677095237356075792
+    second: Lobby Logo_5
+  - first:
+      213: -1516754110150826386
+    second: Lobby Logo_6
+  - first:
+      213: -2860593475116630968
+    second: Lobby Logo_7
+  - first:
+      213: -7061214905771152205
+    second: Lobby Logo_8
+  - first:
+      213: 5952507094848276925
+    second: Lobby Logo_9
+  - first:
+      213: 8314284363384245673
+    second: Lobby Logo_10
+  - first:
+      213: -7617478415620488660
+    second: Lobby Logo_11
+  - first:
+      213: -8987104936490924312
+    second: Lobby Logo_12
+  - first:
+      213: -4664971392798306637
+    second: Lobby Logo_13
+  - first:
+      213: 7361071994936184867
+    second: Lobby Logo_14
+  - first:
+      213: -3029101062198987654
+    second: Lobby Logo_15
+  - first:
+      213: 9033737135418825105
+    second: Lobby Logo_16
+  - first:
+      213: 5211427094693934894
+    second: Lobby Logo_17
+  - first:
+      213: 8147044387786231695
+    second: Lobby Logo_18
+  - first:
+      213: -2862646965974010338
+    second: Lobby Logo_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Lobby Logo_0
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 394
+        width: 390
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 021fcea9e4231e620800000000000000
+      internalID: 2801575756389216544
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_1
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 317
+        width: 149
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65703e32d4d93dad0800000000000000
+      internalID: -2678624398715189418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_2
+      rect:
+        serializedVersion: 2
+        x: 550
+        y: 388
+        width: 248
+        height: 235
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a56a2b7811cb734d0800000000000000
+      internalID: -3154846230472645030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_3
+      rect:
+        serializedVersion: 2
+        x: 734
+        y: 317
+        width: 88
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73cfff45b36f603b0800000000000000
+      internalID: -5546475156370621385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_4
+      rect:
+        serializedVersion: 2
+        x: 821
+        y: 394
+        width: 388
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72d066bebf4c4ccb0800000000000000
+      internalID: -4844530712878641881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_5
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 318
+        width: 72
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01bb7d8252c3b6870800000000000000
+      internalID: 8677095237356075792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_6
+      rect:
+        serializedVersion: 2
+        x: 505
+        y: 317
+        width: 149
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e66a8d44c2863fae0800000000000000
+      internalID: -1516754110150826386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_7
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 317
+        width: 65
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84c7fd4f3612d48d0800000000000000
+      internalID: -2860593475116630968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_8
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 317
+        width: 149
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bc21d28476810e90800000000000000
+      internalID: -7061214905771152205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_9
+      rect:
+        serializedVersion: 2
+        x: 961
+        y: 355
+        width: 38
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db98c6f3aad8b9250800000000000000
+      internalID: 5952507094848276925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_10
+      rect:
+        serializedVersion: 2
+        x: 998
+        y: 317
+        width: 51
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ad4a19d395426370800000000000000
+      internalID: 8314284363384245673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_11
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 170
+        width: 163
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c224cb87db7494690800000000000000
+      internalID: -7617478415620488660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_12
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 174
+        width: 114
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e68c4d0da3674380800000000000000
+      internalID: -8987104936490924312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_13
+      rect:
+        serializedVersion: 2
+        x: 365
+        y: 172
+        width: 104
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bec5ecfb31b24fb0800000000000000
+      internalID: -4664971392798306637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_14
+      rect:
+        serializedVersion: 2
+        x: 477
+        y: 176
+        width: 109
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3205f309af7c72660800000000000000
+      internalID: 7361071994936184867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_15
+      rect:
+        serializedVersion: 2
+        x: 589
+        y: 176
+        width: 100
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a74fedef1a876f5d0800000000000000
+      internalID: -3029101062198987654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_16
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 174
+        width: 109
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 199d4e6df084e5d70800000000000000
+      internalID: 9033737135418825105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_17
+      rect:
+        serializedVersion: 2
+        x: 805
+        y: 174
+        width: 219
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e27f310d455b25840800000000000000
+      internalID: 5211427094693934894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_18
+      rect:
+        serializedVersion: 2
+        x: 1021
+        y: 173
+        width: 104
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8f865fa4bd101170800000000000000
+      internalID: 8147044387786231695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Lobby Logo_19
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 176
+        width: 109
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e16f4cb50c5d548d0800000000000000
+      internalID: -2862646965974010338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Lobby Logo_0: 2801575756389216544
+      Lobby Logo_1: -2678624398715189418
+      Lobby Logo_10: 8314284363384245673
+      Lobby Logo_11: -7617478415620488660
+      Lobby Logo_12: -8987104936490924312
+      Lobby Logo_13: -4664971392798306637
+      Lobby Logo_14: 7361071994936184867
+      Lobby Logo_15: -3029101062198987654
+      Lobby Logo_16: 9033737135418825105
+      Lobby Logo_17: 5211427094693934894
+      Lobby Logo_18: 8147044387786231695
+      Lobby Logo_19: -2862646965974010338
+      Lobby Logo_2: -3154846230472645030
+      Lobby Logo_3: -5546475156370621385
+      Lobby Logo_4: -4844530712878641881
+      Lobby Logo_5: 8677095237356075792
+      Lobby Logo_6: -1516754110150826386
+      Lobby Logo_7: -2860593475116630968
+      Lobby Logo_8: -7061214905771152205
+      Lobby Logo_9: 5952507094848276925
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

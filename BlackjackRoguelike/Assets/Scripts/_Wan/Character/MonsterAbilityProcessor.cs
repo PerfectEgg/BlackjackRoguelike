@@ -99,16 +99,13 @@ public sealed class MonsterAbilityProcessor
             switch (_ability.AbilityType)
             {
                 case MonsterAbilityType.DeclareRankPermanentAttack when !_state.UsedThisRound && _state.DeclaredRanks.Contains(card.Rank):
-                    _permanentAttackBonus += card.BaseValue * GetFloatValueOrDefault(_ability, 0.05f);
+                    _permanentAttackBonus += GetFloatValueOrDefault(_ability, 0.05f);
                     _state.UsedThisRound = true;
                     SyncAttackMultiplier(monster);
                     break;
                 case MonsterAbilityType.DeclareRankHeal when !_state.UsedThisRound && _state.DeclaredRanks.Contains(card.Rank):
                     monster.Heal(card.BaseValue * GetIntValueOrDefault(_ability, 1));
                     _state.UsedThisRound = true;
-                    break;
-                case MonsterAbilityType.CardColorBonus:
-                    ApplyCardColorBonus(card, monster, _ability);
                     break;
             }
         }
@@ -121,10 +118,16 @@ public sealed class MonsterAbilityProcessor
 
         foreach (MonsterAbilityRuntimeState _state in _abilityStates)
         {
-            if (_state.Definition.AbilityType == MonsterAbilityType.HideNextDealerCard && !_state.UsedThisRound)
+            MonsterAbilityDefinition _ability = _state.Definition;
+            if (_ability.AbilityType == MonsterAbilityType.HideNextDealerCard && !_state.UsedThisRound)
             {
                 _hiddenDealerCardIndex = match.DealerHand.Cards.Count - 1;
                 _state.UsedThisRound = true;
+            }
+            else if (_ability.AbilityType == MonsterAbilityType.CardColorBonus)
+            {
+                Card _card = match.DealerHand.Cards[^1];
+                ApplyCardColorBonus(_card, monster, _ability);
             }
         }
 
