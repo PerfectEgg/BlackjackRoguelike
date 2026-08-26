@@ -13,63 +13,63 @@ MonoBehaviour:
   m_Name: SoundLibrary
   m_EditorClassIdentifier: Assembly-CSharp::SoundLibrary
   LobbyBgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: bde92491be1ada348b56bd339675c85c, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   Stage1To3Bgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: b162b558b9da98f4181311f6c90a803e, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   Stage4To6Bgm:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: d4e58e160b63731428e646b453ad6c8b, type: 3}
+    Volume: 0.5
     Pitch: 1
     RandomPitchRange: 0
   Stage7Bgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: a62e46ee1e419a743ab40586372aa47f, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   Stage8Bgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 9dae1d0a2c9e94f48b328200c4007ce6, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   Stage9Bgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: c5cfaf7eceee7b84da84c91fe7271432, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   Stage10Bgm:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: d6683efe41817ee4aaee3a73d237a4b7, type: 3}
+    Volume: 0.8
     Pitch: 1
     RandomPitchRange: 0
   ShopBgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 7ea49392dc911b54b99010a0734009a6, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   GameOverBgm:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 1229150bf67e6e14eafcc30895fe12bb, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   GameClearBgm:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: c36d4cf3b7bb5c14e92be03735a960c8, type: 3}
+    Volume: 0.2
     Pitch: 1
     RandomPitchRange: 0
   StageClear:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: e92975bb7849ec749bfa5eac6d8caef5, type: 3}
+    Volume: 0.9
     Pitch: 1
     RandomPitchRange: 0
   CardDraw:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: 71bde682d1f274d4ea0ca1230f3d0f67, type: 3}
+    Volume: 0.7
     Pitch: 1
     RandomPitchRange: 0
   InitialHandSwap:
@@ -78,38 +78,38 @@ MonoBehaviour:
     Pitch: 1
     RandomPitchRange: 0
   BlackjackDamage:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: e3e18e9ac9663014e9f13477a22b920f, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   BlackjackHit:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: 21d3619d6941b4a4795ae4f3eed3ea49, type: 3}
+    Volume: 0.5
     Pitch: 1
     RandomPitchRange: 0
   NormalDamage:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: e37157e8520291640bc3dc02f552bfca, type: 3}
+    Volume: 0.3
     Pitch: 1
     RandomPitchRange: 0
   DoubleDown:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: 6a9e5dddf058e204d8ed0b87587e35e3, type: 3}
+    Volume: 0.5
     Pitch: 1
     RandomPitchRange: 0
   NormalHit:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: 7097bd21409202b468361e06ae34b1d3, type: 3}
+    Volume: 0.8
     Pitch: 1
     RandomPitchRange: 0
   BarrierHit:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: f064821fbe6a2304aa97dd85d4ebb3af, type: 3}
+    Volume: 0.9
     Pitch: 1
     RandomPitchRange: 0
   CommonButton:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: df45b196f2aba88489681c4655be1109, type: 3}
+    Volume: 0.7
     Pitch: 1
     RandomPitchRange: 0
   InventoryToggle:
@@ -118,27 +118,32 @@ MonoBehaviour:
     Pitch: 1
     RandomPitchRange: 0
   ShopExit:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: da2afefea6bfb814b979c52d20b461af, type: 3}
+    Volume: 0.5
     Pitch: 1
     RandomPitchRange: 0
   ShopRefresh:
+    Clip: {fileID: 8300000, guid: d2116408d42d23246862451183dc30f0, type: 3}
+    Volume: 0.7
+    Pitch: 1
+    RandomPitchRange: 0
+  ShopPurchase:
     Clip: {fileID: 0}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
   RewardSelect:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: d21b3f42d39e3f041aed9c6ca76dde2c, type: 3}
+    Volume: 0.8
     Pitch: 1
     RandomPitchRange: 0
   RewardCancel:
-    Clip: {fileID: 0}
-    Volume: 1
+    Clip: {fileID: 8300000, guid: e9d8f2664d9270a4d9510c8ce3d011f2, type: 3}
+    Volume: 0.7
     Pitch: 1
     RandomPitchRange: 0
   ItemUse:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 5689746c3c1a0894faed761526a4d612, type: 3}
     Volume: 1
     Pitch: 1
     RandomPitchRange: 0
