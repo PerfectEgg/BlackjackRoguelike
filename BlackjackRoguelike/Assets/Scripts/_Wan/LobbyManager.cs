@@ -31,7 +31,7 @@ public sealed class LobbyManager : MonoBehaviour
     // 지정한 게임 씬으로 이동합니다.
     private void StartGame()
     {
-        SceneManager.LoadScene(_gameSceneName);
+        SceneTransitionController.LoadScene(_gameSceneName);
     }
 
     // 공용 사운드 컨트롤러의 음소거 상태를 전환합니다.

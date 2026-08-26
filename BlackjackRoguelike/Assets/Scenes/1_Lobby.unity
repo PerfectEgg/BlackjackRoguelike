@@ -272,7 +272,6 @@ MonoBehaviour:
   _gameSceneName: 2_Game
   _soundController: {fileID: 1788030734}
   _muteButton: {fileID: 93257094}
-  _muteIconImage: {fileID: 0}
   _soundOnIcon: {fileID: 21300000, guid: 5cca5b180334522418a10be06a259114, type: 3}
   _soundMutedIcon: {fileID: 21300000, guid: 974b8881d78fdb44fbc6ee85d3ec1bbf, type: 3}
 --- !u!4 &318318370
@@ -1119,8 +1118,8 @@ SceneRoots:
   m_Roots:
   - {fileID: 2124156413}
   - {fileID: 1788030733}
-  - {fileID: 692068578}
   - {fileID: 1788447672}
+  - {fileID: 692068578}
   - {fileID: 299240303}
   - {fileID: 2108147022}
   - {fileID: 318318370}

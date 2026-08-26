@@ -19,6 +19,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private Sprite _soundMutedIcon;
     [Tooltip("해당 스테이지 진입 전에 상점을 엽니다. 디버그용으로 2를 넣으면 1스테이지 처치 뒤 상점이 열립니다.")]
     [SerializeField] private int[] _shopVisitStages = { 5, 10 };
+    [SerializeField] private string _gameOverSceneName = "3_GameOver";
+    [SerializeField] private string _gameClearSceneName = "4_GameClear";
 
     [Header("공용 아이템 UI 프리팹")]
     [SerializeField] private ItemIconView _itemIconPrefab;
@@ -77,6 +79,24 @@ public sealed class BlackjackSystem : MonoBehaviour
     [Header("결과 피격 모션 UI")]
     [SerializeField] private RectTransform _dealerHitMotionTarget;
     [SerializeField] private RectTransform _playerHitMotionTarget;
+
+    [Header("딜러 피해 이펙트 UI")]
+    [Tooltip("일반 피해 시 표시할 이펙트 Image입니다.")]
+    [SerializeField] private Image _dealerNormalDamageEffect;
+    [Tooltip("딜러 버스트 승리 시 표시할 이펙트 Image입니다.")]
+    [SerializeField] private Image _dealerBustDamageEffect;
+    [Tooltip("플레이어 블랙잭 피해 시 표시할 이펙트 Image입니다.")]
+    [SerializeField] private Image _dealerBlackjackDamageEffect;
+    [Min(0f)] [SerializeField] private float _dealerDamageEffectDuration = 0.45f;
+    [Min(1f)] [SerializeField] private float _dealerDamageEffectPeakScale = 1.25f;
+
+    [Header("플레이어 피격 이펙트 UI")]
+    [Tooltip("일반 딜러 피해 시 화면 전체에 표시할 Image입니다.")]
+    [SerializeField] private Image _playerNormalHitEffect;
+    [Tooltip("딜러 블랙잭 피해 시 화면 전체에 표시할 Image입니다.")]
+    [SerializeField] private Image _playerBlackjackHitEffect;
+    [Min(0f)] [SerializeField] private float _playerNormalHitEffectDuration = 0.3f;
+    [Min(0f)] [SerializeField] private float _playerBlackjackHitEffectDuration = 0.55f;
 
     [Header("카드 UI")]
     [SerializeField] private RectTransform _dealerCardContainer;
@@ -142,6 +162,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private readonly List<ItemIconView> _passiveRewardViews = new();
     private readonly List<ItemIconView> _activeRewardViews = new();
     private readonly List<ItemIconView> _shopOfferViews = new();
+    private readonly Dictionary<Image, Vector3> _dealerDamageEffectBaseScales = new();
 
     private GameManager _game;
     private StageItemDropResult _pendingReward;
@@ -153,12 +174,15 @@ public sealed class BlackjackSystem : MonoBehaviour
     private Coroutine _dealerTurnCoroutine;
     private Coroutine _resultCoroutine;
     private Coroutine _hitMotionCoroutine;
+    private Coroutine _dealerDamageEffectCoroutine;
+    private Coroutine _playerHitEffectCoroutine;
     private Coroutine _dealerHpAnimationCoroutine;
     private Coroutine _playerHpAnimationCoroutine;
     private Coroutine _panelTransitionCoroutine;
     private Coroutine _shopFadeCoroutine;
     private StageItemDropResult _queuedReward;
     private bool _isShopVisitQueued;
+    private bool _isGameClearQueued;
     private bool _isShowingMatchResult;
     private bool _isPaused;
     private string _matchResultText;
@@ -180,6 +204,8 @@ public sealed class BlackjackSystem : MonoBehaviour
 
         HideCardTemplate(_dealerCardTemplate);
         HideCardTemplate(_playerCardTemplate);
+        PrepareDealerDamageEffects();
+        PreparePlayerHitEffects();
         if (_inventoryPanel != null) _inventoryPanel.SetActive(false);
         if (_pausePanel != null) _pausePanel.SetActive(false);
         SetModalBackdropVisible(false);
@@ -213,6 +239,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         _game.PlayerBarrierBlocked += OnPlayerBarrierBlocked;
         _game.GoldChanged += OnGoldChanged;
         _game.StageStarted += OnStageStarted;
+        _game.RunCompleted += OnRunCompleted;
         _game.StageItemDropsGenerated += QueueRewardPanel;
         _game.ShopVisitRequested += OnShopVisitRequested;
         _game.ShopStockChanged += OnShopStockChanged;
@@ -329,14 +356,14 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void RestartGame()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(_gameSceneName);
+        SceneTransitionController.LoadScene(_gameSceneName);
     }
 
     // 시간 흐름을 복구한 뒤 지정한 로비 씬으로 돌아갑니다.
     private void ReturnToLobby()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(_lobbySceneName);
+        SceneTransitionController.LoadScene(_lobbySceneName);
     }
 
     // 카드가 공개될 때 카드 영역과 점수를 갱신합니다.
@@ -371,6 +398,8 @@ public sealed class BlackjackSystem : MonoBehaviour
                   _isBlackjackHit ? SoundCue.BlackjackHit :
                   result.Defender == _game.Player ? SoundCue.NormalHit : SoundCue.NormalDamage);
         if (result.Defender == _game.Monster && _game.Monster.IsDefeated) PlaySound(SoundCue.StageClear);
+        if (result.Defender == _game.Monster) PlayDealerDamageEffect();
+        if (result.Defender == _game.Player) PlayPlayerHitEffect(_isBlackjackHit);
         StartDamageHpAnimation(result);
         RefreshBattleUi();
     }
@@ -396,6 +425,21 @@ public sealed class BlackjackSystem : MonoBehaviour
         BindMonsterHover();
         RefreshBattleUi();
         StartOpeningDealSequence();
+    }
+
+    // 마지막 스테이지 처치 시 보상보다 게임클리어 화면 전환을 우선 처리합니다.
+    private void OnRunCompleted()
+    {
+        _isGameClearQueued = true;
+        _queuedReward = null;
+        StartCoroutine(TransitionToGameClearIfNoResultSequence());
+    }
+
+    // 매치 종료 이벤트가 없는 직접 피해 처치만 다음 프레임에 게임클리어 씬으로 전환합니다.
+    private IEnumerator TransitionToGameClearIfNoResultSequence()
+    {
+        yield return null;
+        if (_resultCoroutine == null && _isGameClearQueued) SceneTransitionController.LoadScene(_gameClearSceneName);
     }
 
     // 아이템 획득으로 인벤토리·공격력·카드 조작 버튼 상태를 갱신합니다.
@@ -489,6 +533,16 @@ public sealed class BlackjackSystem : MonoBehaviour
 
         _isShowingMatchResult = false;
         _resultCoroutine = null;
+        if (_game.Player.IsDefeated)
+        {
+            SceneTransitionController.LoadScene(_gameOverSceneName);
+            yield break;
+        }
+        if (_isGameClearQueued || _game.IsRunCompleted)
+        {
+            SceneTransitionController.LoadScene(_gameClearSceneName);
+            yield break;
+        }
         if (_queuedReward != null)
         {
             StageItemDropResult _reward = _queuedReward;
@@ -532,6 +586,125 @@ public sealed class BlackjackSystem : MonoBehaviour
         }
         _target.anchoredPosition = _origin;
         _hitMotionCoroutine = null;
+    }
+
+    // 씬에 미리 둔 딜러 피해 이펙트를 시작 시 숨기고 원래 크기를 보관합니다.
+    private void PrepareDealerDamageEffects()
+    {
+        RegisterDamageEffectBaseScale(_dealerNormalDamageEffect);
+        RegisterDamageEffectBaseScale(_dealerBustDamageEffect);
+        RegisterDamageEffectBaseScale(_dealerBlackjackDamageEffect);
+        SetDamageEffectVisible(_dealerNormalDamageEffect, false);
+        SetDamageEffectVisible(_dealerBustDamageEffect, false);
+        SetDamageEffectVisible(_dealerBlackjackDamageEffect, false);
+    }
+
+    // 이펙트가 중간에 중단되어도 원래 크기로 되돌릴 수 있도록 기본 스케일을 보관합니다.
+    private void RegisterDamageEffectBaseScale(Image effect)
+    {
+        if (effect != null && !_dealerDamageEffectBaseScales.ContainsKey(effect)) _dealerDamageEffectBaseScales.Add(effect, effect.rectTransform.localScale);
+    }
+
+    // 현재 매치의 블랙잭·버스트 상태에 맞는 딜러 피해 이펙트를 재생합니다.
+    private void PlayDealerDamageEffect()
+    {
+        if (_dealerDamageEffectCoroutine != null) StopCoroutine(_dealerDamageEffectCoroutine);
+        Image _effect = _game.Match.PlayerHand.IsBlackjack
+            ? _dealerBlackjackDamageEffect
+            : _game.Match.DealerScore > _game.Match.TargetScore
+                ? _dealerBustDamageEffect
+                : _dealerNormalDamageEffect;
+        if (_effect == null || _dealerDamageEffectDuration <= 0f) return;
+        _dealerDamageEffectCoroutine = StartCoroutine(AnimateDealerDamageEffect(_effect));
+    }
+
+    // 이펙트를 커지며 페이드 인하고, 원래 크기로 돌아오며 페이드 아웃합니다.
+    private IEnumerator AnimateDealerDamageEffect(Image effect)
+    {
+        PrepareDealerDamageEffects();
+        SetDamageEffectVisible(effect, true);
+        RectTransform _rectTransform = effect.rectTransform;
+        Vector3 _baseScale = _rectTransform.localScale;
+        CanvasGroup _canvasGroup = effect.GetComponent<CanvasGroup>();
+        if (_canvasGroup == null) _canvasGroup = effect.gameObject.AddComponent<CanvasGroup>();
+
+        float _elapsed = 0f;
+        while (_elapsed < _dealerDamageEffectDuration)
+        {
+            _elapsed += Time.deltaTime;
+            float _progress = Mathf.Clamp01(_elapsed / _dealerDamageEffectDuration);
+            float _curve = _progress <= 0.5f ? _progress * 2f : (1f - _progress) * 2f;
+            _rectTransform.localScale = Vector3.Lerp(_baseScale, _baseScale * _dealerDamageEffectPeakScale, _curve);
+            _canvasGroup.alpha = _curve;
+            yield return null;
+        }
+
+        _rectTransform.localScale = _baseScale;
+        SetDamageEffectVisible(effect, false);
+        _dealerDamageEffectCoroutine = null;
+    }
+
+    // Image와 CanvasGroup을 함께 켜거나 꺼서 비활성 이펙트가 입력을 막지 않게 처리합니다.
+    private void SetDamageEffectVisible(Image effect, bool isVisible)
+    {
+        if (effect == null) return;
+        if (!isVisible && _dealerDamageEffectBaseScales.TryGetValue(effect, out Vector3 _baseScale)) effect.rectTransform.localScale = _baseScale;
+        CanvasGroup _canvasGroup = effect.GetComponent<CanvasGroup>();
+        if (_canvasGroup != null)
+        {
+            _canvasGroup.alpha = isVisible ? 0f : 0f;
+            _canvasGroup.blocksRaycasts = false;
+            _canvasGroup.interactable = false;
+        }
+        effect.gameObject.SetActive(isVisible);
+    }
+
+    // 씬에 미리 둔 화면 전체 피격 이펙트를 시작 시 숨깁니다.
+    private void PreparePlayerHitEffects()
+    {
+        SetPlayerHitEffectVisible(_playerNormalHitEffect, false, 0f);
+        SetPlayerHitEffectVisible(_playerBlackjackHitEffect, false, 0f);
+    }
+
+    // 딜러 블랙잭 여부에 맞춰 일반 또는 블랙잭 화면 피격 이펙트를 재생합니다.
+    private void PlayPlayerHitEffect(bool isBlackjackHit)
+    {
+        if (_playerHitEffectCoroutine != null) StopCoroutine(_playerHitEffectCoroutine);
+        Image _effect = isBlackjackHit ? _playerBlackjackHitEffect : _playerNormalHitEffect;
+        float _duration = isBlackjackHit ? _playerBlackjackHitEffectDuration : _playerNormalHitEffectDuration;
+        if (_effect == null || _duration <= 0f) return;
+        _playerHitEffectCoroutine = StartCoroutine(AnimatePlayerHitEffect(_effect, _duration));
+    }
+
+    // 화면 이펙트를 빠르게 페이드 인한 뒤 지정한 유지 시간 안에 페이드 아웃합니다.
+    private IEnumerator AnimatePlayerHitEffect(Image effect, float duration)
+    {
+        PreparePlayerHitEffects();
+        SetPlayerHitEffectVisible(effect, true, 0f);
+        float _elapsed = 0f;
+        while (_elapsed < duration)
+        {
+            _elapsed += Time.deltaTime;
+            float _progress = Mathf.Clamp01(_elapsed / duration);
+            float _alpha = _progress <= 0.2f ? _progress / 0.2f : 1f - (_progress - 0.2f) / 0.8f;
+            SetPlayerHitEffectVisible(effect, true, _alpha);
+            yield return null;
+        }
+
+        SetPlayerHitEffectVisible(effect, false, 0f);
+        _playerHitEffectCoroutine = null;
+    }
+
+    // 화면 전체 이펙트의 투명도만 바꾸고, 재생이 끝나면 오브젝트를 비활성화합니다.
+    private void SetPlayerHitEffectVisible(Image effect, bool isVisible, float alpha)
+    {
+        if (effect == null) return;
+        CanvasGroup _canvasGroup = effect.GetComponent<CanvasGroup>();
+        if (_canvasGroup == null) _canvasGroup = effect.gameObject.AddComponent<CanvasGroup>();
+        _canvasGroup.alpha = Mathf.Clamp01(alpha);
+        _canvasGroup.blocksRaycasts = false;
+        _canvasGroup.interactable = false;
+        effect.gameObject.SetActive(isVisible);
     }
 
     // 처치된 몬스터의 피격 스프라이트를 결과 표시 시간 동안 페이드 아웃한 뒤 비웁니다.
@@ -1402,6 +1575,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         _game.PlayerBarrierBlocked -= OnPlayerBarrierBlocked;
         _game.GoldChanged -= OnGoldChanged;
         _game.StageStarted -= OnStageStarted;
+        _game.RunCompleted -= OnRunCompleted;
         _game.StageItemDropsGenerated -= QueueRewardPanel;
         _game.ShopVisitRequested -= OnShopVisitRequested;
         _game.ShopStockChanged -= OnShopStockChanged;
