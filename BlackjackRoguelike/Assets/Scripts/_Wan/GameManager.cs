@@ -67,6 +67,8 @@ public sealed class GameManager
 
     // 매치 결과로 피해가 체력에 적용된 직후 발생합니다.
     public event Action<DamageResult> DamageApplied;
+    // 플레이어 보호막이 피해를 막은 직후 발생합니다.
+    public event Action PlayerBarrierBlocked;
     // 골드가 바뀐 뒤 현재 골드를 전달합니다.
     public event Action<int> GoldChanged;
     // 몬스터 처치 시 처치한 몬스터를 전달합니다.
@@ -427,6 +429,7 @@ public sealed class GameManager
         bool _wasPlayerProtected = _damageResult.Defender == Player && Player.HasBarrier;
         int _actualDamageToMonster = _damageResult.Defender == Monster ? Math.Min(_damageResult.Damage, Monster.CurrentHp) : 0;
         _damageResult.Defender.TakeDamage(_damageResult.Damage);
+        if (_wasPlayerProtected) PlayerBarrierBlocked?.Invoke();
         if (_damageResult.Defender == Player && !_wasPlayerProtected && !Player.IsDefeated)
         {
             _itemEffectProcessor.HandlePlayerDamageTaken(Player, ItemInventory);
@@ -435,7 +438,7 @@ public sealed class GameManager
         {
             ApplyLifeSteal(_actualDamageToMonster);
         }
-        DamageApplied?.Invoke(_damageResult);
+        if (!_wasPlayerProtected) DamageApplied?.Invoke(_damageResult);
 
         ApplyHpBetVictoryEffects(matchResult);
         ApplyActiveMatchEndHealEffects();

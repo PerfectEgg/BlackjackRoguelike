@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>Inspector에 연결한 UI 항목으로 블랙잭 전투, 인벤토리, 보상을 표시하는 시스템입니다.</summary>
@@ -11,6 +12,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     [Header("게임 데이터")]
     [SerializeField] private MonsterDatabase _monsterDatabase;
     [SerializeField] private ItemDatabase _itemDatabase;
+    [SerializeField] private SoundController _soundController;
     [Tooltip("해당 스테이지 진입 전에 상점을 엽니다. 디버그용으로 2를 넣으면 1스테이지 처치 뒤 상점이 열립니다.")]
     [SerializeField] private int[] _shopVisitStages = { 5, 10 };
 
@@ -38,10 +40,30 @@ public sealed class BlackjackSystem : MonoBehaviour
     [SerializeField] private TMP_Text _playerScoreBonusText;
     [SerializeField] private TMP_Text _hintText;
 
+    [Header("공용 팝업 배경 UI")]
+    [Tooltip("상점을 제외한 팝업 뒤에 표시할 전체 화면 검은 Image입니다. Raycast Target을 켜 둡니다.")]
+    [SerializeField] private Image _modalBackdropImage;
+    [Range(0f, 1f)] [SerializeField] private float _modalBackdropAlpha = 0.65f;
+
+    [Header("일시 정지 UI")]
+    [Tooltip("Esc 입력 시 표시할 일시 정지 패널입니다.")]
+    [SerializeField] private GameObject _pausePanel;
+    [Tooltip("일시 정지 패널을 닫는 돌아가기 버튼입니다.")]
+    [SerializeField] private Button _pauseResumeButton;
+    [Tooltip("현재 런을 처음부터 다시 시작하는 버튼입니다.")]
+    [SerializeField] private Button _pauseRestartButton;
+    [Tooltip("로비 씬으로 돌아가는 버튼입니다.")]
+    [SerializeField] private Button _pauseLobbyButton;
+    [Tooltip("재시작할 게임 씬 이름입니다.")]
+    [SerializeField] private string _gameSceneName = "2_Game";
+    [Tooltip("돌아갈 로비 씬 이름입니다.")]
+    [SerializeField] private string _lobbySceneName = "1_Lobby";
+
     [Header("자동 진행 타이밍")]
     [Min(0f)] [SerializeField] private float _openingCardInterval = 0.2f;
     [Min(0f)] [SerializeField] private float _automaticDrawInterval = 0.4f;
     [Min(0f)] [SerializeField] private float _resultDisplayDuration = 2.5f;
+    [Min(0f)] [SerializeField] private float _hpRecoveryAnimationDuration = 0.4f;
     [Min(0f)] [SerializeField] private float _hitMotionDuration = 0.25f;
     [Min(0f)] [SerializeField] private float _hitMotionDistance = 16f;
     [Min(0f)] [SerializeField] private float _cardClearDuration = 1f;
@@ -134,6 +156,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private StageItemDropResult _queuedReward;
     private bool _isShopVisitQueued;
     private bool _isShowingMatchResult;
+    private bool _isPaused;
     private string _matchResultText;
     private float _displayedDealerHp = -1f;
     private float _displayedPlayerHp = -1f;
@@ -141,6 +164,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 게임 매니저와 UI 버튼을 준비하고, 데이터베이스가 있으면 1스테이지 런을 시작합니다.
     private void Start()
     {
+        if (_soundController == null) _soundController = SoundController.Instance;
         _game = new GameManager();
         SubscribeGameEvents();
         BindUiButtons();
@@ -148,6 +172,9 @@ public sealed class BlackjackSystem : MonoBehaviour
         HideCardTemplate(_dealerCardTemplate);
         HideCardTemplate(_playerCardTemplate);
         if (_inventoryPanel != null) _inventoryPanel.SetActive(false);
+        if (_pausePanel != null) _pausePanel.SetActive(false);
+        SetModalBackdropVisible(false);
+        Time.timeScale = 1f;
         CreateItemDescriptionView();
         if (_rewardPanel != null) _rewardPanel.SetActive(false);
         if (_shopPanel != null) _shopPanel.SetActive(false);
@@ -159,9 +186,11 @@ public sealed class BlackjackSystem : MonoBehaviour
         RefreshBattleUi();
     }
 
-    // 자동 진행과 충돌하지 않도록 다음 패 블랙잭 디버그 키만 유지합니다.
+    // Esc로 일시 정지 패널을 토글하고, 정지 중에는 디버그 입력을 막습니다.
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape)) TogglePausePanel();
+        if (_isPaused) return;
         if (Input.GetKeyDown(KeyCode.B)) _game.ForceNextPlayerOpeningBlackjack();
     }
 
@@ -172,6 +201,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         _game.Match.StateChanged += OnMatchStateChanged;
         _game.Match.MatchEnded += OnMatchEnded;
         _game.DamageApplied += OnDamageApplied;
+        _game.PlayerBarrierBlocked += OnPlayerBarrierBlocked;
         _game.GoldChanged += OnGoldChanged;
         _game.StageStarted += OnStageStarted;
         _game.StageItemDropsGenerated += QueueRewardPanel;
@@ -186,8 +216,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         if (_hitButton != null) _hitButton.onClick.AddListener(_game.PlayerHit);
         if (_standButton != null) _standButton.onClick.AddListener(_game.PlayerStand);
-        if (_doubleDownButton != null) _doubleDownButton.onClick.AddListener(_game.PlayerDoubleDown);
-        if (_handSwapButton != null) _handSwapButton.onClick.AddListener(() => _game.TrySwapInitialHand());
+        if (_doubleDownButton != null) _doubleDownButton.onClick.AddListener(TryDoubleDown);
+        if (_handSwapButton != null) _handSwapButton.onClick.AddListener(TrySwapInitialHand);
         if (_inventoryButton != null) _inventoryButton.onClick.AddListener(ToggleInventory);
         if (_inventoryCloseButton != null) _inventoryCloseButton.onClick.AddListener(ToggleInventory);
         if (_passiveInventoryTabButton != null) _passiveInventoryTabButton.onClick.AddListener(() => ShowInventoryTab(ItemType.Passive));
@@ -195,12 +225,101 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_rewardConfirmButton != null) _rewardConfirmButton.onClick.AddListener(ConfirmRewardSelection);
         if (_shopRefreshButton != null) _shopRefreshButton.onClick.AddListener(RefreshShop);
         if (_shopExitButton != null) _shopExitButton.onClick.AddListener(ExitShop);
+        if (_pauseResumeButton != null) _pauseResumeButton.onClick.AddListener(ResumeGame);
+        if (_pauseRestartButton != null) _pauseRestartButton.onClick.AddListener(RestartGame);
+        if (_pauseLobbyButton != null) _pauseLobbyButton.onClick.AddListener(ReturnToLobby);
 
+        BindButtonSound(_hitButton);
+        BindButtonSound(_standButton);
+        BindButtonSound(_doubleDownButton);
+        BindButtonSound(_handSwapButton);
+        BindButtonSound(_inventoryButton);
+        BindButtonSound(_inventoryCloseButton);
+        BindButtonSound(_passiveInventoryTabButton);
+        BindButtonSound(_activeInventoryTabButton);
+        BindButtonSound(_rewardConfirmButton);
+        BindButtonSound(_shopRefreshButton);
+        BindButtonSound(_shopExitButton);
+        BindButtonSound(_pauseResumeButton);
+        BindButtonSound(_pauseRestartButton);
+        BindButtonSound(_pauseLobbyButton);
+
+    }
+
+    // Inspector에 연결한 일반 UI 버튼에 공통 클릭 효과음을 등록합니다.
+    private void BindButtonSound(Button button)
+    {
+        if (button != null) button.onClick.AddListener(() => PlaySound(SoundCue.CommonButton));
+    }
+
+    // 사운드 컨트롤러가 연결된 경우에만 지정한 효과음을 재생합니다.
+    private void PlaySound(SoundCue cue)
+    {
+        if (_soundController != null) _soundController.Play(cue);
+    }
+
+    // 더블 다운이 가능한 경우에만 실행하고 전용 효과음을 재생합니다.
+    private void TryDoubleDown()
+    {
+        if (!_game.Match.CanDoubleDown) return;
+        _game.PlayerDoubleDown();
+        PlaySound(SoundCue.DoubleDown);
+    }
+
+    // 초기 패 교환이 성공한 경우에만 전용 효과음을 재생합니다.
+    private void TrySwapInitialHand()
+    {
+        if (_game.TrySwapInitialHand()) PlaySound(SoundCue.InitialHandSwap);
+    }
+
+    // 현재 전투를 멈추거나, 일시 정지 패널을 닫고 이어서 진행합니다.
+    private void TogglePausePanel()
+    {
+        if (_pausePanel == null) return;
+        if (_isPaused) ResumeGame();
+        else PauseGame();
+    }
+
+    // 시간 기반 전투 진행을 멈추고 일시 정지 UI를 엽니다.
+    private void PauseGame()
+    {
+        if (_pausePanel == null || _isPaused) return;
+        _isPaused = true;
+        _itemDescriptionView?.Hide();
+        SetModalBackdropVisible(true);
+        _pausePanel.SetActive(true);
+        _pausePanel.transform.SetAsLastSibling();
+        Time.timeScale = 0f;
+    }
+
+    // 시간 흐름을 복구하고 일시 정지 UI를 닫습니다.
+    private void ResumeGame()
+    {
+        if (!_isPaused) return;
+        _isPaused = false;
+        Time.timeScale = 1f;
+        if (_pausePanel != null) _pausePanel.SetActive(false);
+        RefreshModalBackdrop();
+    }
+
+    // 현재 게임 씬을 다시 불러와 모든 런타임 전투 상태를 초기화합니다.
+    private void RestartGame()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(_gameSceneName);
+    }
+
+    // 시간 흐름을 복구한 뒤 지정한 로비 씬으로 돌아갑니다.
+    private void ReturnToLobby()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(_lobbySceneName);
     }
 
     // 카드가 공개될 때 카드 영역과 점수를 갱신합니다.
     private void OnCardDrawn(bool isPlayer, Card card, int score)
     {
+        PlaySound(SoundCue.CardDraw);
         RefreshBattleUi();
     }
 
@@ -223,8 +342,20 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 피해가 적용된 뒤 처치 피해가 아니면 결과 표시 시간의 절반 동안 체력 UI를 감소시킵니다.
     private void OnDamageApplied(DamageResult result)
     {
+        bool _isBlackjackDamage = result.Attacker == _game.Player && _game.Match.PlayerHand.IsBlackjack;
+        bool _isBlackjackHit = result.Attacker == _game.Monster && _game.Match.DealerHand.IsBlackjack;
+        PlaySound(_isBlackjackDamage ? SoundCue.BlackjackDamage :
+                  _isBlackjackHit ? SoundCue.BlackjackHit :
+                  result.Defender == _game.Player ? SoundCue.NormalHit : SoundCue.NormalDamage);
+        if (result.Defender == _game.Monster && _game.Monster.IsDefeated) PlaySound(SoundCue.StageClear);
         StartDamageHpAnimation(result);
         RefreshBattleUi();
+    }
+
+    // 보호막으로 피해가 무효화된 경우 전용 효과음을 재생합니다.
+    private void OnPlayerBarrierBlocked()
+    {
+        PlaySound(SoundCue.BarrierHit);
     }
 
     // 골드가 바뀐 뒤 상단 정보를 갱신합니다.
@@ -236,6 +367,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 새 스테이지 시작 시 적 이름과 패를 갱신합니다.
     private void OnStageStarted(int stageNumber, Monster monster)
     {
+        if (_soundController != null) _soundController.PlayStageBgm(stageNumber);
+        SynchronizeHpUiImmediately();
         SetMonsterIdleSprite();
         BindMonsterHover();
         RefreshBattleUi();
@@ -528,7 +661,9 @@ public sealed class BlackjackSystem : MonoBehaviour
         UpdateRewardSelectionUi(ItemType.Passive);
         UpdateRewardSelectionUi(ItemType.Active);
         UpdateRewardConfirmButton();
+        SetModalBackdropVisible(true);
         if (_rewardPanel != null) _rewardPanel.SetActive(true);
+        if (_rewardPanel != null) _rewardPanel.transform.SetAsLastSibling();
     }
 
     // 보상 후보를 지정한 슬롯 안에 생성하고 각 아이콘에 선택 동작을 연결합니다.
@@ -566,8 +701,16 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (index >= _candidates.Count) return;
         HashSet<int> _selectedIndexes = itemType == ItemType.Passive ? _selectedPassiveRewardIndexes : _selectedActiveRewardIndexes;
         int _maximumPickCount = itemType == ItemType.Passive ? _pendingReward.PassivePickCount : _pendingReward.ActivePickCount;
-        if (_selectedIndexes.Contains(index)) _selectedIndexes.Remove(index);
-        else if (_selectedIndexes.Count < _maximumPickCount) _selectedIndexes.Add(index);
+        if (_selectedIndexes.Contains(index))
+        {
+            _selectedIndexes.Remove(index);
+            PlaySound(SoundCue.RewardCancel);
+        }
+        else if (_selectedIndexes.Count < _maximumPickCount)
+        {
+            _selectedIndexes.Add(index);
+            PlaySound(SoundCue.RewardSelect);
+        }
 
         UpdateRewardSelectionUi(itemType);
         UpdateRewardConfirmButton();
@@ -615,6 +758,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void CloseRewardPanel()
     {
         if (_rewardPanel != null) _rewardPanel.SetActive(false);
+        RefreshModalBackdrop();
         _pendingReward = null;
         RefreshInventoryUi();
         StartPanelTransitionSequence();
@@ -628,6 +772,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         ClearBattleCardsImmediately();
         SetShopkeeperSprite();
         _shopPanel.SetActive(true);
+        if (_soundController != null) _soundController.PlayShopBgm();
         RefreshShopUi();
         StartShopFade(true);
     }
@@ -687,13 +832,16 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 새로 고침 비용을 지불하고 상점의 모든 진열 칸을 다시 구성합니다.
     private void RefreshShop()
     {
-        if (_game.TryRefreshShop()) RefreshShopUi();
+        if (!_game.TryRefreshShop()) return;
+        PlaySound(SoundCue.ShopRefresh);
+        RefreshShopUi();
     }
 
     // 상점 이용을 종료해 다음 스테이지 진행을 허용합니다.
     private void ExitShop()
     {
         if (!_game.CompleteShopVisit()) return;
+        PlaySound(SoundCue.ShopExit);
         StartShopFade(false);
     }
 
@@ -811,6 +959,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_stageText != null) _stageText.text = $"스테이지 {_game.CurrentStage}";
         if (_goldText != null) _goldText.text = $"{_game.Gold}";
         if (_dealerNameText != null) _dealerNameText.text = _game.Monster.Name.ToUpperInvariant();
+        StartHpRecoveryAnimationIfNeeded();
         RefreshHpUi();
         if (_dealerAttackMultiplierText != null) _dealerAttackMultiplierText.text = $"x{_game.Monster.AttackMultiplier:0.##}";
         if (_playerAttackMultiplierText != null) _playerAttackMultiplierText.text = $"x{_game.Player.AttackMultiplier:0.##}";
@@ -830,8 +979,8 @@ public sealed class BlackjackSystem : MonoBehaviour
     {
         if (_game == null) return;
 
-        if (_displayedDealerHp < 0f) _displayedDealerHp = _game.Monster.CurrentHp;
-        if (_displayedPlayerHp < 0f) _displayedPlayerHp = _game.Player.CurrentHp;
+        if (_dealerHpAnimationCoroutine == null) _displayedDealerHp = _game.Monster.CurrentHp;
+        if (_playerHpAnimationCoroutine == null) _displayedPlayerHp = _game.Player.CurrentHp;
 
         int _dealerHp = Mathf.Clamp(Mathf.CeilToInt(_displayedDealerHp), 0, _game.Monster.MaxHp);
         int _playerHp = Mathf.Clamp(Mathf.CeilToInt(_displayedPlayerHp), 0, _game.Player.MaxHp);
@@ -839,6 +988,34 @@ public sealed class BlackjackSystem : MonoBehaviour
         UpdateHpBar(_dealerHpBarFillImage, _dealerHp, _game.Monster.MaxHp);
         if (_playerHpText != null) _playerHpText.text = $"{_playerHp} / {_game.Player.MaxHp}";
         UpdateHpBar(_playerHpBarFillImage, _playerHp, _game.Player.MaxHp);
+    }
+
+    // 스테이지 진입·회복처럼 피해 연출이 아닌 변경은 즉시 실제 체력값으로 동기화합니다.
+    private void SynchronizeHpUiImmediately()
+    {
+        if (_game == null) return;
+        if (_dealerHpAnimationCoroutine != null) StopCoroutine(_dealerHpAnimationCoroutine);
+        if (_playerHpAnimationCoroutine != null) StopCoroutine(_playerHpAnimationCoroutine);
+        _dealerHpAnimationCoroutine = null;
+        _playerHpAnimationCoroutine = null;
+        _displayedDealerHp = _game.Monster.CurrentHp;
+        _displayedPlayerHp = _game.Player.CurrentHp;
+        RefreshHpUi();
+    }
+
+    // 실제 체력이 표시 체력보다 커졌을 때만 회복 시간을 사용해 HP 숫자와 바를 채웁니다.
+    private void StartHpRecoveryAnimationIfNeeded()
+    {
+        if (_game == null || _hpRecoveryAnimationDuration <= 0f) return;
+
+        if (_dealerHpAnimationCoroutine == null && _displayedDealerHp >= 0f && _game.Monster.CurrentHp > _displayedDealerHp)
+        {
+            _dealerHpAnimationCoroutine = StartCoroutine(AnimateHpChange(true, _game.Monster.CurrentHp, _hpRecoveryAnimationDuration));
+        }
+        if (_playerHpAnimationCoroutine == null && _displayedPlayerHp >= 0f && _game.Player.CurrentHp > _displayedPlayerHp)
+        {
+            _playerHpAnimationCoroutine = StartCoroutine(AnimateHpChange(false, _game.Player.CurrentHp, _hpRecoveryAnimationDuration));
+        }
     }
 
     // 결과 피해는 수치와 바가 동시에 감소하도록 보간하고, 처치 피해만 즉시 0으로 표시합니다.
@@ -851,32 +1028,45 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_isDealer)
         {
             if (_dealerHpAnimationCoroutine != null) StopCoroutine(_dealerHpAnimationCoroutine);
+            _dealerHpAnimationCoroutine = null;
             if (_targetHp <= 0)
             {
                 _displayedDealerHp = 0f;
                 return;
             }
-            _dealerHpAnimationCoroutine = StartCoroutine(AnimateHpLoss(true, _targetHp));
+            if (_resultDisplayDuration <= 0f || _displayedDealerHp <= _targetHp)
+            {
+                _displayedDealerHp = _targetHp;
+                RefreshHpUi();
+                return;
+            }
+            _dealerHpAnimationCoroutine = StartCoroutine(AnimateHpChange(true, _targetHp, _resultDisplayDuration * 0.5f));
             return;
         }
 
         if (result.Defender != _game.Player) return;
         if (_playerHpAnimationCoroutine != null) StopCoroutine(_playerHpAnimationCoroutine);
+        _playerHpAnimationCoroutine = null;
         if (_targetHp <= 0)
         {
             _displayedPlayerHp = 0f;
             return;
         }
-        _playerHpAnimationCoroutine = StartCoroutine(AnimateHpLoss(false, _targetHp));
+        if (_resultDisplayDuration <= 0f || _displayedPlayerHp <= _targetHp)
+        {
+            _displayedPlayerHp = _targetHp;
+            RefreshHpUi();
+            return;
+        }
+        _playerHpAnimationCoroutine = StartCoroutine(AnimateHpChange(false, _targetHp, _resultDisplayDuration * 0.5f));
     }
 
-    // 결과 표시 시간의 절반 동안 대상 체력 UI만 실제 체력값까지 천천히 감소시킵니다.
-    private IEnumerator AnimateHpLoss(bool isDealer, int targetHp)
+    // 지정한 시간 동안 대상 체력 UI를 목표 체력까지 감소 또는 회복시킵니다.
+    private IEnumerator AnimateHpChange(bool isDealer, int targetHp, float duration)
     {
-        float _duration = _resultDisplayDuration * 0.5f;
         float _startHp = isDealer ? _displayedDealerHp : _displayedPlayerHp;
         if (_startHp < 0f) _startHp = targetHp;
-        if (_duration <= 0f || _startHp <= targetHp)
+        if (duration <= 0f || Mathf.Approximately(_startHp, targetHp))
         {
             if (isDealer) _displayedDealerHp = targetHp;
             else _displayedPlayerHp = targetHp;
@@ -885,10 +1075,10 @@ public sealed class BlackjackSystem : MonoBehaviour
         }
 
         float _elapsed = 0f;
-        while (_elapsed < _duration)
+        while (_elapsed < duration)
         {
             _elapsed += Time.deltaTime;
-            float _progress = Mathf.Clamp01(_elapsed / _duration);
+            float _progress = Mathf.Clamp01(_elapsed / duration);
             float _hp = Mathf.Lerp(_startHp, targetHp, _progress);
             if (isDealer) _displayedDealerHp = _hp;
             else _displayedPlayerHp = _hp;
@@ -966,6 +1156,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void TryUseActiveInventoryItem(ItemInstance itemInstance)
     {
         if (!_game.TryUseActiveItem(itemInstance)) return;
+        PlaySound(SoundCue.ItemUse);
         RefreshInventoryUi();
         RefreshBattleUi();
     }
@@ -1095,10 +1286,37 @@ public sealed class BlackjackSystem : MonoBehaviour
         _inventoryPanel.SetActive(!_inventoryPanel.activeSelf);
         if (_inventoryPanel.activeSelf)
         {
+            PlaySound(SoundCue.InventoryToggle);
+            SetModalBackdropVisible(true);
+            _inventoryPanel.transform.SetAsLastSibling();
             RefreshInventoryUi();
             ShowInventoryTab(_selectedInventoryType);
         }
-        else _itemDescriptionView?.Hide();
+        else
+        {
+            PlaySound(SoundCue.InventoryToggle);
+            _itemDescriptionView?.Hide();
+            RefreshModalBackdrop();
+        }
+    }
+
+    // 상점을 제외한 팝업이 열려 있으면 검은 반투명 배경을 유지합니다.
+    private void RefreshModalBackdrop()
+    {
+        bool _hasOpenModal = (_inventoryPanel != null && _inventoryPanel.activeSelf) ||
+                             (_rewardPanel != null && _rewardPanel.activeSelf) ||
+                             (_pausePanel != null && _pausePanel.activeSelf);
+        SetModalBackdropVisible(_hasOpenModal);
+    }
+
+    // 배경을 팝업 바로 아래 렌더링하고, Raycast로 뒤 UI 입력을 차단합니다.
+    private void SetModalBackdropVisible(bool isVisible)
+    {
+        if (_modalBackdropImage == null) return;
+        _modalBackdropImage.raycastTarget = true;
+        _modalBackdropImage.color = new Color(0f, 0f, 0f, _modalBackdropAlpha);
+        _modalBackdropImage.gameObject.SetActive(isVisible);
+        if (isVisible) _modalBackdropImage.transform.SetAsLastSibling();
     }
 
     // 공용 설명 프리팹을 Canvas 아래 지정한 루트에 한 번 생성해 모든 아이콘이 공유하게 합니다.
@@ -1121,11 +1339,13 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 등록한 이벤트 구독을 해제합니다.
     private void OnDestroy()
     {
+        Time.timeScale = 1f;
         if (_game == null) return;
         _game.Match.CardDrawn -= OnCardDrawn;
         _game.Match.StateChanged -= OnMatchStateChanged;
         _game.Match.MatchEnded -= OnMatchEnded;
         _game.DamageApplied -= OnDamageApplied;
+        _game.PlayerBarrierBlocked -= OnPlayerBarrierBlocked;
         _game.GoldChanged -= OnGoldChanged;
         _game.StageStarted -= OnStageStarted;
         _game.StageItemDropsGenerated -= QueueRewardPanel;

@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4600f1ec58da3948b025c105b9bdcc0, type: 3}
+  m_Name: SoundLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::SoundLibrary
+  LobbyBgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  Stage1To3Bgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  Stage4To6Bgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  Stage7Bgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  Stage8Bgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  Stage9Bgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  Stage10Bgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  ShopBgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  GameOverBgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  GameClearBgm:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  StageClear:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  CardDraw:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  InitialHandSwap:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  BlackjackDamage:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  BlackjackHit:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  NormalDamage:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  DoubleDown:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  NormalHit:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  BarrierHit:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  CommonButton:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  InventoryToggle:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  ShopExit:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  ShopRefresh:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  RewardSelect:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  RewardCancel:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
+  ItemUse:
+    Clip: {fileID: 0}
+    Volume: 1
+    Pitch: 1
+    RandomPitchRange: 0
