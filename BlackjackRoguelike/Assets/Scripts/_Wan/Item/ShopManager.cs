@@ -107,18 +107,51 @@ public sealed class ShopManager
         _offers.Clear();
         if (_itemDatabase == null) return;
 
-        List<ItemDefinition> _passiveItems = _itemDropManager.GenerateUniqueItems(_itemDatabase, ItemType.Passive, PassiveOfferCount, ownedPassiveItems);
+        HashSet<ItemDefinition> _passiveExclusions = BuildPassiveExclusions(ownedPassiveItems);
+        List<ItemDefinition> _passiveItems = _itemDropManager.GenerateUniqueItems(_itemDatabase, ItemType.Passive, PassiveOfferCount, _passiveExclusions);
         List<ItemDefinition> _activeItems = _itemDropManager.GenerateUniqueItems(_itemDatabase, ItemType.Active, ActiveOfferCount, null);
-        AddOffers(_passiveItems);
-        AddOffers(_activeItems);
+        AddOffers(_passiveItems, ownedPassiveItems);
+        AddOffers(_activeItems, null);
+    }
+
+    // 동일 에셋뿐 아니라 같은 이름으로 복제된 패시브 정의도 제외해 상점 중복 진열을 막습니다.
+    private HashSet<ItemDefinition> BuildPassiveExclusions(ISet<ItemDefinition> ownedPassiveItems)
+    {
+        HashSet<ItemDefinition> _excludedItems = ownedPassiveItems != null
+            ? new HashSet<ItemDefinition>(ownedPassiveItems)
+            : new HashSet<ItemDefinition>();
+        if (ownedPassiveItems == null) return _excludedItems;
+
+        foreach (ItemRarity _rarity in Enum.GetValues(typeof(ItemRarity)))
+        {
+            foreach (ItemDefinition _candidate in _itemDatabase.GetItems(ItemType.Passive, _rarity))
+            {
+                if (_candidate != null && IsOwnedPassive(_candidate, ownedPassiveItems)) _excludedItems.Add(_candidate);
+            }
+        }
+
+        return _excludedItems;
+    }
+
+    // 인스펙터에서 복제된 에셋까지 고려해 이름 또는 정의 참조가 같은 패시브인지 확인합니다.
+    private bool IsOwnedPassive(ItemDefinition candidate, ISet<ItemDefinition> ownedPassiveItems)
+    {
+        foreach (ItemDefinition _ownedItem in ownedPassiveItems)
+        {
+            if (_ownedItem == null) continue;
+            if (_ownedItem == candidate) return true;
+            if (!string.IsNullOrWhiteSpace(_ownedItem.ItemName) && _ownedItem.ItemName == candidate.ItemName) return true;
+        }
+        return false;
     }
 
     // 뽑힌 아이템을 등급·스테이지·할인이 반영된 진열 정보로 변환합니다.
-    private void AddOffers(IReadOnlyList<ItemDefinition> items)
+    private void AddOffers(IReadOnlyList<ItemDefinition> items, ISet<ItemDefinition> ownedPassiveItems)
     {
         foreach (ItemDefinition _item in items)
         {
             if (_item == null) continue;
+            if (_item.ItemType == ItemType.Passive && ownedPassiveItems != null && IsOwnedPassive(_item, ownedPassiveItems)) continue;
             _offers.Add(new ShopOffer(_item, CalculateItemPrice(_item)));
         }
     }

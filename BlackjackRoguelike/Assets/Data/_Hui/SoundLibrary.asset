@@ -99,7 +99,7 @@ MonoBehaviour:
     RandomPitchRange: 0
   NormalHit:
     Clip: {fileID: 8300000, guid: 7097bd21409202b468361e06ae34b1d3, type: 3}
-    Volume: 0.8
+    Volume: 0.5
     Pitch: 1
     RandomPitchRange: 0
   BarrierHit:

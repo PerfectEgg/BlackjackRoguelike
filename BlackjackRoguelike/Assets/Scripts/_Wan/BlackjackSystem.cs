@@ -447,6 +447,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 카드가 공개될 때 카드 영역과 점수를 갱신합니다.
     private void OnCardDrawn(bool isPlayer, Card card, int score)
     {
+        CloseInventoryForCardProgression();
         PlaySound(SoundCue.CardDraw);
         RefreshBattleUi();
     }
@@ -454,6 +455,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     // 입력 가능 상태가 바뀔 때 버튼과 안내 문구를 갱신합니다.
     private void OnMatchStateChanged(MatchState state)
     {
+        if (state is MatchState.OpeningDeal or MatchState.PlayerForcedDraw or MatchState.DealerTurn) CloseInventoryForCardProgression();
         RefreshBattleUi();
         if (_inventoryPanel != null && _inventoryPanel.activeSelf) RefreshInventoryUi();
         if (state == MatchState.OpeningDeal || state == MatchState.PlayerForcedDraw) StartOpeningDealSequence();
@@ -1232,6 +1234,7 @@ public sealed class BlackjackSystem : MonoBehaviour
         if (_hitButton != null) _hitButton.interactable = _isPlayerTurn;
         if (_standButton != null) _standButton.interactable = _isPlayerTurn;
         if (_doubleDownButton != null) _doubleDownButton.interactable = _game.Match.CanDoubleDown;
+        if (_inventoryButton != null) _inventoryButton.interactable = _isPlayerTurn;
         if (_handSwapButton != null)
         {
             _handSwapButton.interactable = _game.CanSwapInitialHand;
@@ -1589,6 +1592,7 @@ public sealed class BlackjackSystem : MonoBehaviour
     private void ToggleInventory()
     {
         if (_inventoryPanel == null) return;
+        if (!_inventoryPanel.activeSelf && (_game == null || !_game.CanUseActiveItems)) return;
         _inventoryPanel.SetActive(!_inventoryPanel.activeSelf);
         if (_inventoryPanel.activeSelf)
         {
@@ -1604,6 +1608,15 @@ public sealed class BlackjackSystem : MonoBehaviour
             _itemDescriptionView?.Hide();
             RefreshModalBackdrop();
         }
+    }
+
+    // 카드가 자동 또는 수동으로 진행될 때 인벤토리를 닫아 액티브 사용과 드로우가 겹치지 않게 합니다.
+    private void CloseInventoryForCardProgression()
+    {
+        if (_inventoryPanel == null || !_inventoryPanel.activeSelf) return;
+        _inventoryPanel.SetActive(false);
+        _itemDescriptionView?.Hide();
+        RefreshModalBackdrop();
     }
 
     // 상점을 제외한 팝업이 열려 있으면 검은 반투명 배경을 유지합니다.
