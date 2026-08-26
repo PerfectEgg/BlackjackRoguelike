@@ -1615,14 +1615,18 @@ public sealed class BlackjackSystem : MonoBehaviour
         SetModalBackdropVisible(_hasOpenModal);
     }
 
-    // 배경을 팝업 바로 아래 렌더링하고, Raycast로 뒤 UI 입력을 차단합니다.
+    // 배경을 첫 팝업 바로 아래에만 배치하고, 이후 겹치는 팝업에서는 순서를 유지합니다.
     private void SetModalBackdropVisible(bool isVisible)
     {
         if (_modalBackdropImage == null) return;
+        bool _wasVisible = _modalBackdropImage.gameObject.activeSelf;
         _modalBackdropImage.raycastTarget = true;
         _modalBackdropImage.color = new Color(0f, 0f, 0f, _modalBackdropAlpha);
         _modalBackdropImage.gameObject.SetActive(isVisible);
-        if (isVisible) _modalBackdropImage.transform.SetAsLastSibling();
+
+        // 이미 표시 중인 배경을 다시 최상단으로 보내면, 먼저 열려 있던 패널의 클릭을 막게 됩니다.
+        // 새로 표시할 때만 순서를 올리고, 바로 뒤이어 열리는 패널이 그 위에 오르게 합니다.
+        if (isVisible && !_wasVisible) _modalBackdropImage.transform.SetAsLastSibling();
     }
 
     // 공용 설명 프리팹을 Canvas 아래 지정한 루트에 한 번 생성해 모든 아이콘이 공유하게 합니다.
